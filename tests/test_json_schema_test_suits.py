@@ -7,18 +7,18 @@ import requests
 from fastjsonschema import CodeGenerator, RefResolver, JsonSchemaException, compile
 
 remotes = {
-    "http://localhost:1234/integer.json": {u"type": u"integer"},
-    "http://localhost:1234/name.json": {
-        u"type": "string",
-        u"definitions": {
-            u"orNull": {u"anyOf": [{u"type": u"null"}, {u"$ref": u"#"}]},
+    'http://localhost:1234/integer.json': {'type': 'integer'},
+    'http://localhost:1234/name.json': {
+        'type': 'string',
+        'definitions': {
+            'orNull': {'anyOf': [{'type': 'null'}, {'$ref': '#'}]},
         },
     },
-    "http://localhost:1234/subSchemas.json": {
-        u"integer": {u"type": u"integer"},
-        u"refToInteger": {u"$ref": u"#/integer"},
+    'http://localhost:1234/subSchemas.json': {
+        'integer': {'type': 'integer'},
+        'refToInteger': {'$ref': '#/integer'},
     },
-    "http://localhost:1234/folder/folderInteger.json": {u"type": u"integer"}
+    'http://localhost:1234/folder/folderInteger.json': {'type': 'integer'}
 }
 def remotes_handler(uri):
     print(uri)
@@ -32,7 +32,6 @@ def pytest_generate_tests(metafunc):
         'ecmascript-regex.json',
     ]
     ignore_tests = [
-        "base URI change - change folder in subschema",
     ]
 
     suite_dir_path = Path(suite_dir).resolve()
