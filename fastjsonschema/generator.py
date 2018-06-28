@@ -354,7 +354,12 @@ class CodeGenerator:
         for definition_item in self._definition['anyOf']:
             with self.l('if not {variable}_any_of_count:'):
                 with self.l('try:'):
-                    self.generate_func_code_block(definition_item, self._variable, self._variable_name, clear_variables=True)
+                    self.generate_func_code_block(
+                        definition_item,
+                        self._variable,
+                        self._variable_name,
+                        clear_variables=True
+                    )
                     self.l('{variable}_any_of_count += 1')
                 self.l('except JsonSchemaException: pass')
 
@@ -380,7 +385,12 @@ class CodeGenerator:
         self.l('{variable}_one_of_count = 0')
         for definition_item in self._definition['oneOf']:
             with self.l('try:'):
-                self.generate_func_code_block(definition_item, self._variable, self._variable_name, clear_variables=True)
+                self.generate_func_code_block(
+                    definition_item,
+                    self._variable,
+                    self._variable_name,
+                    clear_variables=True
+                )
                 self.l('{variable}_one_of_count += 1')
             self.l('except JsonSchemaException: pass')
 
@@ -488,9 +498,17 @@ class CodeGenerator:
             0.5839540958404541
             >>> timeit.timeit("len({}.fromkeys(x)) == len(x)", "x=range(100)+range(100)", number=100000)
             0.7094449996948242
-            >>> timeit.timeit("seen = set(); any(i in seen or seen.add(i) for i in x)", "x=range(100)+range(100)", number=100000)
+            >>> timeit.timeit(
+                "seen = set(); any(i in seen or seen.add(i) for i in x)",
+                "x=range(100)+range(100)",
+                number=100000
+            )
             2.0819358825683594
-            >>> timeit.timeit("np.unique(x).size == len(x)", "x=range(100)+range(100); import numpy as np", number=100000)
+            >>> timeit.timeit(
+                "np.unique(x).size == len(x)",
+                "x=range(100)+range(100); import numpy as np",
+                number=100000
+            )
             2.1439831256866455
         """
         self.create_variable_with_length()
@@ -514,9 +532,13 @@ class CodeGenerator:
 
                 if 'additionalItems' in self._definition:
                     if self._definition['additionalItems'] is False:
-                        self.l('if {variable}_len > {}: raise JsonSchemaException("{name} must contain only specified items")', len(self._definition['items']))
+                        with self.l('if {variable}_len > {}:', len(self._definition['items'])):
+                            self.l('raise JsonSchemaException("{name} must contain only specified items")')
                     else:
-                        with self.l('for {variable}_x, {variable}_item in enumerate({variable}[{0}:], {0}):', len(self._definition['items'])):
+                        with self.l(
+                            'for {variable}_x, {variable}_item in enumerate({variable}[{0}:], {0}):',
+                            len(self._definition['items'])
+                        ):
                             self.generate_func_code_block(
                                 self._definition['additionalItems'],
                                 '{}_item'.format(self._variable),
@@ -541,7 +563,10 @@ class CodeGenerator:
         with self.l('if isinstance({variable}, dict):'):
             self.create_variable_with_length()
             with self.l('if {variable}_len > {maxProperties}:'):
-                self.l('raise JsonSchemaException("{name} must contain less than or equal to {maxProperties} properties")')
+                self.l(
+                    'raise JsonSchemaException("{name} must contain less than '
+                    + 'or equal to {maxProperties} properties")'
+                )
 
     def generate_required(self):
         with self.l('if isinstance({variable}, dict):'):

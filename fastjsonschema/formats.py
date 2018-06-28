@@ -114,6 +114,8 @@ def check_uri_reference(variable):
 
 
 def check_relative_json_pointer(variable):
+    if variable == '#':
+        return True
     raise JsonSchemaException('not yet implemented')
 
 
