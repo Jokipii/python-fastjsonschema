@@ -16,6 +16,7 @@ import requests
 
 from .meta_schema import MetaSchema
 from .exceptions import JsonSchemaException
+from .meta_schema import meta_schemas
 
 
 def resolve_path(schema, fragment):
@@ -111,6 +112,11 @@ class RefResolver(object):
             handlers = {}
         self.handlers = handlers
         self.walk(schema)
+
+        # meta-schemas: draft-04, draft-06, draft-07
+        for uri, schema in meta_schemas.items():
+            self.store[uri] = schema
+
 
     @classmethod
     def from_schema(cls, schema, schema_version='draft4', handlers=None, **kwargs):
