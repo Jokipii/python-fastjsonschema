@@ -23,6 +23,10 @@ setup(
 
     install_requires=[
         'requests',
+        'jsonpointer',
+        'email_validator',
+        'rfc3987',
+        'expynent',
     ],
     extras_require={
         'devel': [
