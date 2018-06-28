@@ -11,12 +11,7 @@ def pytest_generate_tests(metafunc):
         'contains.json',
         'content.json',
         'if-then-else.json',
-        'idn-email.json',
-        'idn-hostname.json',
-        'iri-reference.json',
-        'iri.json',
         'relative-json-pointer.json',
-        'time.json',
         'const.json',
     ]
     ignore_tests = [
@@ -27,8 +22,6 @@ def pytest_generate_tests(metafunc):
         'dependencies with empty array',
         'exclusiveMaximum validation',
         'exclusiveMinimum validation',
-        'format: uri-template',
-        'validation of URI References',
         'items with boolean schema (true)',
         'items with boolean schema (false)',
         'items with boolean schema',
@@ -38,7 +31,6 @@ def pytest_generate_tests(metafunc):
         'properties with boolean schema',
         'propertyNames with boolean schema false',
         'propertyNames validation',
-        'validation of date strings',
         'allOf with boolean schemas, all true',
         'allOf with boolean schemas, some false',
         'allOf with boolean schemas, all false',
@@ -51,10 +43,11 @@ def pytest_generate_tests(metafunc):
         'oneOf with boolean schemas, all false',
         'oneOf with boolean schemas, one true',
         'oneOf with boolean schemas, more than one true',
-        'validation of JSON-pointers (JSON String Representation)',
         'patternProperties with boolean schemas',
         '$ref to boolean schema true',
         '$ref to boolean schema false',
+        'validation of IRIs',
+        'validation of time strings',
     ]
 
     param_values, param_ids = resolve_param_values_and_ids(

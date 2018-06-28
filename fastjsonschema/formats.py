@@ -1,5 +1,6 @@
 import re
 import jsonpointer
+import email_validator
 from email_validator import validate_email
 from email_validator import validate_email_domain_part
 import rfc3987
@@ -59,27 +60,42 @@ FORMAT_REGEXS = {
 
 
 def check_idn_email(variable):
-    return validate_email(
-        variable,
-        allow_smtputf8=True,
-        check_deliverability=False
-    )
+    try:
+        return validate_email(
+            variable,
+            allow_smtputf8=True,
+            check_deliverability=False
+        )
+    except email_validator.EmailSyntaxError:
+        return False
 
 
 def check_idn_hostname(variable):
-    return validate_email_domain_part(variable)
+    try:
+        return validate_email_domain_part(variable)
+    except email_validator.EmailSyntaxError:
+        return False
 
 
 def check_iri(variable):
-    return rfc3987.parse(variable, rule="IRI")
+    try:
+        return rfc3987.parse(variable, rule="IRI")
+    except ValueError:
+        return False
 
 
 def check_iri_reference(variable):
-    return rfc3987.parse(variable, rule="IRI_reference")
+    try:
+        return rfc3987.parse(variable, rule="IRI_reference")
+    except ValueError:
+        return False
 
 
 def check_json_pointer(variable):
-    return jsonpointer.JsonPointer(variable)
+    try:
+        return jsonpointer.JsonPointer(variable)
+    except jsonpointer.JsonPointerException:
+        return False
 
 
 def check_regexp(variable):
@@ -91,7 +107,10 @@ def check_regexp(variable):
 
 
 def check_uri_reference(variable):
-    return rfc3987.parse(variable, rule="URI_reference")
+    try:
+        return rfc3987.parse(variable, rule="URI_reference")
+    except ValueError:
+        return False
 
 
 def check_relative_json_pointer(variable):
