@@ -6,6 +6,7 @@
 
 from collections import OrderedDict
 import re
+import importlib
 
 from .exceptions import JsonSchemaException
 from .indent import indent
@@ -117,6 +118,8 @@ class CodeGenerator:
             re=re,
             JsonSchemaException=JsonSchemaException,
         )
+        for format_ in self._import_formats:
+            state[format_] = getattr(importlib.import_module('fastjsonschema.formats'), format_)
         return state
 
     @property
