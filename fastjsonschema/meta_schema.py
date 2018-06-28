@@ -697,4 +697,3 @@ class MetaSchema(object):
         self.schema = URI_TO_SCHEMA[self.uri]
         self.format_regexs = URI_TO_FORMAT_REGEXS[self.uri]
         self.format_functions = URI_TO_FORMAT_FUNCTIONS[self.uri]
-        self.elements = {}
