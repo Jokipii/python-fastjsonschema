@@ -40,7 +40,8 @@ class CodeGenerator:
 
     .. code-block:: python
 
-        CodeGenerator(json_schema_definition).func_code
+        resolver = RefResolver(definition)
+        CodeGenerator(resolver).func_code
     """
 
     INDENT = 4  # spaces
@@ -55,7 +56,7 @@ class CodeGenerator:
         'object': 'dict',
     }
 
-    def __init__(self, definition, resolver=None):
+    def __init__(self, resolver: RefResolver):
         self._code = []
         self._compile_regexps = {}
 
@@ -63,7 +64,6 @@ class CodeGenerator:
         self._indent = 0
         self._variable = None
         self._variable_name = None
-        self._root_definition = definition
         self._definition = None
 
         # map schema URIs to validation function names for functions
@@ -72,8 +72,6 @@ class CodeGenerator:
         # validation function names that are already done
         self._validation_functions_done = set()
 
-        if resolver is None:
-            resolver = RefResolver.from_schema(definition)
         self._resolver = resolver
         # add main function to `self._needed_validation_functions`
         self._needed_validation_functions[self._resolver.get_uri()] = self._resolver.get_scope_name()

@@ -1,5 +1,6 @@
 import json
 import pytest
+from pathlib import Path
 import requests
 from fastjsonschema import CodeGenerator, RefResolver, JsonSchemaException, compile
 
@@ -24,7 +25,11 @@ def remotes_handler(uri):
     return requests.get(uri).json()
 
 
-def resolve_param_values_and_ids(test_file_paths, ignored_suite_files, ignore_tests):
+def resolve_param_values_and_ids(suite_dir, schema_version, ignored_suite_files, ignore_tests):
+
+    suite_dir_path = Path(suite_dir).resolve()
+    test_file_paths = sorted(set(suite_dir_path.glob("**/*.json")))
+
     param_values = []
     param_ids = []
     for test_file_path in test_file_paths:
@@ -34,6 +39,7 @@ def resolve_param_values_and_ids(test_file_paths, ignored_suite_files, ignore_te
                 for test_data in test_case['tests']:
                     param_values.append(pytest.param(
                         test_case['schema'],
+                        schema_version,
                         test_data['data'],
                         test_data['valid'],
                         marks=pytest.mark.xfail
@@ -49,12 +55,12 @@ def resolve_param_values_and_ids(test_file_paths, ignored_suite_files, ignore_te
     return param_values, param_ids
 
 
-def template_test(schema, data, is_valid):
+def template_test(schema, schema_version, data, is_valid):
     # For debug purposes. When test fails, it will print stdout.
-    resolver = RefResolver.from_schema(schema, handlers={'http': remotes_handler})
-    print(CodeGenerator(schema, resolver=resolver).func_code)
+    resolver = RefResolver.from_schema(schema, schema_version=schema_version, handlers={'http': remotes_handler})
+    print(CodeGenerator(resolver=resolver).func_code)
 
-    validate = compile(schema, handlers={'http': remotes_handler})
+    validate = compile(schema, schema_version=schema_version, handlers={'http': remotes_handler})
     try:
         result = validate(data)
         print('Validate result:', result)

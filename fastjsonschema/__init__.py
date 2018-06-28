@@ -55,10 +55,20 @@ from .version import VERSION
 __all__ = ('VERSION', 'JsonSchemaException', 'compile', 'compile_to_code')
 
 
-# pylint: disable=redefined-builtin,dangerous-default-value,exec-used
-def compile(definition, handlers={}):
+# pylint: disable=redefined-builtin,exec-used
+def compile(definition, handlers=None, schema_version='draft4'):
     """
-    Generates validation function for validating JSON schema by ``definition``. Example:
+    Generates validation function for validating JSON schema by ``definition``.
+
+    :argument dict definition: Json schema definition
+    :argument dict handlers: A mapping from URI schemes to functions
+        that should be used to retrieve them.
+    :argument str schema_version: Meta schema version where definition
+        is created.
+
+    Exception :any:`JsonSchemaException` is thrown when validation fails.
+
+    Example:
 
     .. code-block:: python
 
@@ -81,25 +91,28 @@ def compile(definition, handlers={}):
         data = validate({})
         assert data == {'a': 42}
 
-    Args:
-        definition (dict): Json schema definition
-        handlers (dict): A mapping from URI schemes to functions
-            that should be used to retrieve them.
-
-    Exception :any:`JsonSchemaException` is thrown when validation fails.
     """
-    resolver, code_generator = _factory(definition, handlers)
+    resolver, code_generator = _factory(definition, schema_version, handlers)
     global_state = code_generator.global_state
     # Do not pass local state so it can recursively call itself.
     exec(code_generator.func_code, global_state)
     return global_state[resolver.get_scope_name()]
 
 
-# pylint: disable=dangerous-default-value
-def compile_to_code(definition, handlers={}):
+def compile_to_code(definition, handlers=None, schema_version='draft4'):
     """
     Generates validation function for validating JSON schema by ``definition``
-    and returns compiled code. Example:
+    and returns compiled code.
+
+    :argument dict definition: Json schema definition
+    :argument dict handlers: A mapping from URI schemes to functions
+        that should be used to retrieve them.
+    :argument str schema_version: Meta schema version where definition
+        is created.
+
+    Exception :any:`JsonSchemaException` is thrown when validation fails.
+
+    Example:
 
     .. code-block:: python
 
@@ -116,9 +129,8 @@ def compile_to_code(definition, handlers={}):
         echo "{'type': 'string'}" | pytohn3 -m fastjsonschema > your_file.py
         pytohn3 -m fastjsonschema "{'type': 'string'}" > your_file.py
 
-    Exception :any:`JsonSchemaException` is thrown when validation fails.
     """
-    _, code_generator = _factory(definition, handlers)
+    _, code_generator = _factory(definition, schema_version, handlers)
     return (
         'VERSION = "' + VERSION + '"\n' +
         code_generator.global_state_code + '\n' +
@@ -126,7 +138,11 @@ def compile_to_code(definition, handlers={}):
     )
 
 
-def _factory(definition, handlers):
-    resolver = RefResolver.from_schema(definition, handlers=handlers)
-    code_generator = CodeGenerator(definition, resolver=resolver)
+def _factory(schema, schema_version='draft4', handlers=None):
+    resolver = RefResolver.from_schema(
+        schema=schema,
+        schema_version=schema_version,
+        handlers=handlers
+    )
+    code_generator = CodeGenerator(resolver=resolver)
     return resolver, code_generator

@@ -14,6 +14,7 @@ import json
 
 import requests
 
+from .meta_schema import MetaSchema
 from .exceptions import JsonSchemaException
 
 
@@ -88,26 +89,52 @@ class RefResolver(object):
 
     """
 
-    # pylint: disable=dangerous-default-value,too-many-arguments
-    def __init__(self, base_uri, schema, store={}, cache=True, handlers={}):
+    # pylint: disable=too-many-arguments
+    def __init__(
+            self,
+            base_uri,
+            schema,
+            meta_schema,
+            store=None,
+            cache=True,
+            handlers=None
+    ):
         self.base_uri = base_uri
         self.resolution_scope = base_uri
         self.schema = schema
+        self.meta_schema = meta_schema
+        if store is None:
+            store = {}
         self.store = store
         self.cache = cache
+        if handlers is None:
+            handlers = {}
         self.handlers = handlers
         self.walk(schema)
 
     @classmethod
-    def from_schema(cls, schema, handlers={}, **kwargs):
+    def from_schema(cls, schema, schema_version='draft4', handlers=None, **kwargs):
         """
         Construct a resolver from a JSON schema object.
 
-        :argument schema schema: the referring schema
-        :rtype: :class:`RefResolver`
+        :argument dict schema: the referring schema
+        :argument str schema_version: Meta schema version of the referring schema
+        :argument dict handlers: A mapping from URI schemes to functions
+            that should be used to retrieve them.
+        :rtyper: :class:`RefResolver`
 
         """
-        return cls(schema.get('id', ''), schema, handlers=handlers, **kwargs)
+        # if schema_version is defined in schema we use it
+        if '$schema' in schema:
+            schema_version = schema['$schema']
+        meta_schema = MetaSchema(schema_version)
+        return cls(
+            schema.get(meta_schema.id_type, ''),
+            schema,
+            meta_schema=meta_schema,
+            handlers=handlers,
+            **kwargs
+        )
 
     @contextlib.contextmanager
     def in_scope(self, scope):
@@ -160,11 +187,12 @@ class RefResolver(object):
         """
         Walk thru schema and dereferencing ``id`` and ``$ref`` instances
         """
+        _id = self.meta_schema.id_type
         if '$ref' in node and isinstance(node['$ref'], str):
             ref = node['$ref']
             node['$ref'] = urlparse.urljoin(self.resolution_scope, ref)
-        elif 'id' in node and isinstance(node['id'], str):
-            with self.in_scope(node['id']):
+        elif _id in node and isinstance(node[_id], str):
+            with self.in_scope(node[_id]):
                 self.store[normalize(self.resolution_scope)] = node
                 for _, item in node.items():
                     if isinstance(item, dict):

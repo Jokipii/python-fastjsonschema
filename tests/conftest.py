@@ -10,7 +10,7 @@ from pprint import pprint
 
 import pytest
 
-from fastjsonschema import JsonSchemaException, compile
+from fastjsonschema import JsonSchemaException, compile, _factory
 from fastjsonschema.generator import CodeGenerator
 
 
@@ -18,7 +18,7 @@ from fastjsonschema.generator import CodeGenerator
 def asserter():
     def f(definition, value, expected):
         # When test fails, it will show up code.
-        code_generator = CodeGenerator(definition)
+        resolver, code_generator = _factory(definition, handlers={})
         print(code_generator.func_code)
         pprint(code_generator.global_state)
 
