@@ -621,9 +621,21 @@ URI_TO_SCHEMA = {
 }
 
 URI_TO_ID_TYPE = {
-    'http://json-schema.org/draft-04/schema#':'id',
-    'http://json-schema.org/draft-06/schema#':'$id',
-    'http://json-schema.org/draft-07/schema#':'$id',
+    'http://json-schema.org/draft-04/schema#': 'id',
+    'http://json-schema.org/draft-06/schema#': '$id',
+    'http://json-schema.org/draft-07/schema#': '$id',
+}
+
+URI_TO_FORMATS = {
+    'http://json-schema.org/draft-04/schema#': {
+
+    },
+    'http://json-schema.org/draft-06/schema#': {
+
+    },
+    'http://json-schema.org/draft-07/schema#': {
+        
+    },
 }
 
 VERSION_TO_URI = {
@@ -640,5 +652,5 @@ class MetaSchema(object):
         self.uri = VERSION_TO_URI[version] if version in VERSION_TO_URI else version
         self.id_type = URI_TO_ID_TYPE[self.uri]
         self.schema = URI_TO_SCHEMA[self.uri]
-        self.formats = {}
+        self.formats = URI_TO_FORMATS[self.uri]
         self.elements = {}
