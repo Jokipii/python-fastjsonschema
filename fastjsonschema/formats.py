@@ -96,12 +96,3 @@ FORMAT_FUNCTIONS = {
     'json-pointer': 'check_json_pointer',
     'regex': 'check_regexp',
 }
-
-FORMAT_IMPORTS = {
-    'idn-email': 'from email_validator import validate_email',
-    'idn-hostname': 'from email_validator import validate_email_domain_part',
-    'iri': 'import rfc3987',
-    'iri-reference': 'import rfc3987',
-    'json-pointer': 'import jsonpointer',
-    'regex': 'import re',
-}

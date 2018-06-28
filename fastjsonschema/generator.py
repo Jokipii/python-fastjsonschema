@@ -10,18 +10,10 @@ import re
 from .exceptions import JsonSchemaException
 from .indent import indent
 from .ref_resolver import RefResolver
-
-
-# pylint: disable=line-too-long
-FORMAT_REGEXS = {
-    'date-time': r'^\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+(?:[+-][0-2]\d:[0-5]\d|Z)?$',
-    'uri': r'^\w+:(\/?\/?)[^\s]+$',
-    'email': r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$',
-    'ipv4': r'^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$',
-    'ipv6': r'^(?:(?:[0-9A-Fa-f]{1,4}:){6}(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))|::(?:[0-9A-Fa-f]{1,4}:){5}(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))|(?:[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){4}(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))|(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){3}(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))|(?:(?:[0-9A-Fa-f]{1,4}:){,2}[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){2}(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))|(?:(?:[0-9A-Fa-f]{1,4}:){,3}[0-9A-Fa-f]{1,4})?::[0-9A-Fa-f]{1,4}:(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))|(?:(?:[0-9A-Fa-f]{1,4}:){,4}[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))|(?:(?:[0-9A-Fa-f]{1,4}:){,5}[0-9A-Fa-f]{1,4})?::[0-9A-Fa-f]{1,4}|(?:(?:[0-9A-Fa-f]{1,4}:){,6}[0-9A-Fa-f]{1,4})?::)$',
-    'hostname': r'^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]{1,62}[A-Za-z0-9])$',
-}
-
+from .formats import (
+    FORMAT_REGEXS,
+    FORMAT_FUNCTIONS,
+)
 
 def enforce_list(variable):
     if isinstance(variable, list):
@@ -59,6 +51,7 @@ class CodeGenerator:
     def __init__(self, resolver: RefResolver):
         self._code = []
         self._compile_regexps = {}
+        self._import_formats = set()
 
         self._variables = set()
         self._indent = 0
@@ -119,11 +112,12 @@ class CodeGenerator:
         compiled regular expressions and imports, so it does not have to do it every
         time when validation function is called.
         """
-        return dict(
+        state = dict(
             REGEX_PATTERNS=self._compile_regexps,
             re=re,
             JsonSchemaException=JsonSchemaException,
         )
+        return state
 
     @property
     def global_state_code(self):
@@ -131,9 +125,11 @@ class CodeGenerator:
         Returns global variables for generating function from ``func_code`` as code.
         Includes compiled regular expressions and imports.
         """
+        imports = ['from fastjsonschema.formats import {}'.format(value) for value in self._import_formats]
         if self._compile_regexps:
             return '\n'.join(
-                [
+                imports
+                + [
                     'from fastjsonschema import JsonSchemaException',
                     '',
                     '',
@@ -141,7 +137,8 @@ class CodeGenerator:
             )
         regexs = ['"{}": {}'.format(key, value) for key, value in self._compile_regexps.items()]
         return '\n'.join(
-            [
+            imports
+            + [
                 'import re',
                 'from fastjsonschema import JsonSchemaException',
                 '',
@@ -432,12 +429,10 @@ class CodeGenerator:
             if format_ in FORMAT_REGEXS:
                 format_regex = FORMAT_REGEXS[format_]
                 self._generate_format(format_, format_ + '_re_pattern', format_regex)
-            # format regex is used only in meta schemas
-            elif format_ == 'regex':
-                with self.l('try:'):
-                    self.l('re.compile({variable})')
-                with self.l('except Exception:'):
-                    self.l('raise JsonSchemaException("{name} must be a valid regex")')
+            if format_ in FORMAT_FUNCTIONS:
+                self._import_formats.add(FORMAT_FUNCTIONS[format_])
+                with self.l('if not {}({variable}):', FORMAT_FUNCTIONS[format_]):
+                    self.l('raise JsonSchemaException("{name} must be a valid {}")', format_)
 
     def _generate_format(self, format_name, regexp_name, regexp):
         if self._definition['format'] == format_name:
