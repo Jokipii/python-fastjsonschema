@@ -11,10 +11,6 @@ import importlib
 from .exceptions import JsonSchemaException
 from .indent import indent
 from .ref_resolver import RefResolver
-from .formats import (
-    FORMAT_REGEXS,
-    FORMAT_FUNCTIONS,
-)
 
 def enforce_list(variable):
     if isinstance(variable, list):
@@ -67,6 +63,8 @@ class CodeGenerator:
         self._validation_functions_done = set()
 
         self._resolver = resolver
+        self._format_regexs = resolver.meta_schema.format_regexs
+        self._format_functions = resolver.meta_schema.format_functions
         # add main function to `self._needed_validation_functions`
         self._needed_validation_functions[self._resolver.get_uri()] = self._resolver.get_scope_name()
 
@@ -429,12 +427,12 @@ class CodeGenerator:
     def generate_format(self):
         with self.l('if isinstance({variable}, str):'):
             format_ = self._definition['format']
-            if format_ in FORMAT_REGEXS:
-                format_regex = FORMAT_REGEXS[format_]
+            if format_ in self._format_regexs:
+                format_regex = self._format_regexs[format_]
                 self._generate_format(format_, format_ + '_re_pattern', format_regex)
-            if format_ in FORMAT_FUNCTIONS:
-                self._import_formats.add(FORMAT_FUNCTIONS[format_])
-                with self.l('if not {}({variable}):', FORMAT_FUNCTIONS[format_]):
+            if format_ in self._format_functions:
+                self._import_formats.add(self._format_functions[format_])
+                with self.l('if not {}({variable}):', self._format_functions[format_]):
                     self.l('raise JsonSchemaException("{name} must be a valid {}")', format_)
 
     def _generate_format(self, format_name, regexp_name, regexp):

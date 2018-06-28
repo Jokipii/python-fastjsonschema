@@ -1,3 +1,6 @@
+from .formats import FORMAT_FUNCTIONS, FORMAT_REGEXS
+
+
 DRAFT_04_SCHEMA = {
     'id': 'http://json-schema.org/draft-04/schema#',
     '$schema': 'http://json-schema.org/draft-04/schema#',
@@ -628,53 +631,53 @@ URI_TO_ID_TYPE = {
 
 URI_TO_FORMAT_REGEXS = {
     'http://json-schema.org/draft-04/schema#': {
-        'date-time',
-        'email',
-        'hostname',
-        'ipv4',
-        'ipv6',
-        'uri',
+        'date-time': FORMAT_REGEXS['date-time'],
+        'email': FORMAT_REGEXS['email'],
+        'hostname': FORMAT_REGEXS['hostname'],
+        'ipv4': FORMAT_REGEXS['ipv4'],
+        'ipv6': FORMAT_REGEXS['ipv6'],
+        'uri': FORMAT_REGEXS['uri'],
     },
     'http://json-schema.org/draft-06/schema#': {
-        'date-time',
-        'email',
-        'hostname',
-        'ipv4',
-        'ipv6',
-        'uri',
-        'uri-template',
+        'date-time': FORMAT_REGEXS['date-time'],
+        'email': FORMAT_REGEXS['email'],
+        'hostname': FORMAT_REGEXS['hostname'],
+        'ipv4': FORMAT_REGEXS['ipv4'],
+        'ipv6': FORMAT_REGEXS['ipv6'],
+        'uri': FORMAT_REGEXS['uri'],
+        'uri-template': FORMAT_REGEXS['uri-template'],
     },
     'http://json-schema.org/draft-07/schema#': {
-        'date',
-        'date-time',
-        'email',
-        'hostname',
-        'ipv4',
-        'ipv6',
-        'time',
-        'uri',
-        'uri-template',
+        'date': FORMAT_REGEXS['date'],
+        'date-time': FORMAT_REGEXS['date-time'],
+        'email': FORMAT_REGEXS['email'],
+        'hostname': FORMAT_REGEXS['hostname'],
+        'ipv4': FORMAT_REGEXS['ipv4'],
+        'ipv6': FORMAT_REGEXS['ipv6'],
+        'time': FORMAT_REGEXS['time'],
+        'uri': FORMAT_REGEXS['uri'],
+        'uri-template': FORMAT_REGEXS['uri-template'],
     },
 }
 
 URI_TO_FORMAT_FUNCTIONS = {
     'http://json-schema.org/draft-04/schema#': {
-        'regex',
+        'regex': FORMAT_FUNCTIONS['regex'],
     },
     'http://json-schema.org/draft-06/schema#': {
-        'json-pointer',
-        'regex',
-        'uri-reference',
+        'json-pointer': FORMAT_FUNCTIONS['json-pointer'],
+        'regex': FORMAT_FUNCTIONS['regex'],
+        'uri-reference': FORMAT_FUNCTIONS['uri-reference'],
     },
     'http://json-schema.org/draft-07/schema#': {
-        'idn-email',
-        'idn-hostname',
-        'iri',
-        'iri-reference',
-        'json-pointer',
-        'relative-json-pointer',
-        'regex',
-        'uri-reference',
+        'idn-email': FORMAT_FUNCTIONS['idn-email'],
+        'idn-hostname': FORMAT_FUNCTIONS['idn-hostname'],
+        'iri': FORMAT_FUNCTIONS['iri'],
+        'iri-reference': FORMAT_FUNCTIONS['iri-reference'],
+        'json-pointer': FORMAT_FUNCTIONS['json-pointer'],
+        'relative-json-pointer': FORMAT_FUNCTIONS['relative-json-pointer'],
+        'regex': FORMAT_FUNCTIONS['regex'],
+        'uri-reference': FORMAT_FUNCTIONS['uri-reference'],
     },
 }
 
