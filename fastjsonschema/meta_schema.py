@@ -626,15 +626,55 @@ URI_TO_ID_TYPE = {
     'http://json-schema.org/draft-07/schema#': '$id',
 }
 
-URI_TO_FORMATS = {
+URI_TO_FORMAT_REGEXS = {
     'http://json-schema.org/draft-04/schema#': {
-
+        'date-time',
+        'email',
+        'hostname',
+        'ipv4',
+        'ipv6',
+        'uri',
     },
     'http://json-schema.org/draft-06/schema#': {
-
+        'date-time',
+        'email',
+        'hostname',
+        'ipv4',
+        'ipv6',
+        'uri',
+        'uri-template',
     },
     'http://json-schema.org/draft-07/schema#': {
-        
+        'date',
+        'date-time',
+        'email',
+        'hostname',
+        'ipv4',
+        'ipv6',
+        'time',
+        'uri',
+        'uri-template',
+    },
+}
+
+URI_TO_FORMAT_FUNCTIONS = {
+    'http://json-schema.org/draft-04/schema#': {
+        'regex',
+    },
+    'http://json-schema.org/draft-06/schema#': {
+        'json-pointer',
+        'regex',
+        'uri-reference',
+    },
+    'http://json-schema.org/draft-07/schema#': {
+        'idn-email',
+        'idn-hostname',
+        'iri',
+        'iri-reference',
+        'json-pointer',
+        'relative-json-pointer',
+        'regex',
+        'uri-reference',
     },
 }
 
@@ -652,5 +692,6 @@ class MetaSchema(object):
         self.uri = VERSION_TO_URI[version] if version in VERSION_TO_URI else version
         self.id_type = URI_TO_ID_TYPE[self.uri]
         self.schema = URI_TO_SCHEMA[self.uri]
-        self.formats = URI_TO_FORMATS[self.uri]
+        self.format_regexs = URI_TO_FORMAT_REGEXS[self.uri]
+        self.format_functions = URI_TO_FORMAT_FUNCTIONS[self.uri]
         self.elements = {}

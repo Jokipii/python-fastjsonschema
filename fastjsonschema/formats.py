@@ -10,6 +10,8 @@ from expynent.patterns import (
     IP_V6
 )
 
+from .exceptions import JsonSchemaException
+
 
 DATE_REGEX = re.compile(
     r'(?P<year>\d{4})-(?P<month>\d{1,2})-(?P<day>\d{1,2})$'
@@ -88,11 +90,21 @@ def check_regexp(variable):
         return False
 
 
+def check_uri_reference(variable):
+    return rfc3987.parse(variable, rule="URI_reference")
+
+
+def check_relative_json_pointer(variable):
+    raise JsonSchemaException('not yet implemented')
+
+
 FORMAT_FUNCTIONS = {
     'idn-email': 'check_idn_email',
     'idn-hostname': 'check_idn_hostname',
     'iri': 'check_iri',
     'iri-reference': 'check_iri_reference',
     'json-pointer': 'check_json_pointer',
+    'relative-json-pointer': 'check_relative_json_pointer',
     'regex': 'check_regexp',
+    'uri-reference': 'check_uri_reference',
 }
