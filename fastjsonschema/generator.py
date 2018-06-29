@@ -605,10 +605,18 @@ class CodeGenerator:
             self.l('raise JsonSchemaException("{name} must contain unique items")')
 
     def generate_items(self):
+        items_definition = self._definition['items']
         with self.l('if isinstance({variable}, list):'):
             self.create_variable_with_length()
-            if isinstance(self._definition['items'], list):
-                for x, item_definition in enumerate(self._definition['items']):
+            if items_definition is True:
+                # boolean schema True
+                pass
+            elif items_definition is False:
+                # boolean schema False
+                with self.l('if {variable}:'):
+                    self.l('raise JsonSchemaException("{name} with False boolean schema")')
+            elif isinstance(items_definition, list):
+                for x, item_definition in enumerate(items_definition):
                     with self.l('if {variable}_len > {}:', x):
                         self.l('{variable}_{0} = {variable}[{0}]', x)
                         self.generate_func_code_block(
@@ -621,12 +629,12 @@ class CodeGenerator:
 
                 if 'additionalItems' in self._definition:
                     if self._definition['additionalItems'] is False:
-                        with self.l('if {variable}_len > {}:', len(self._definition['items'])):
+                        with self.l('if {variable}_len > {}:', len(items_definition)):
                             self.l('raise JsonSchemaException("{name} must contain only specified items")')
                     else:
                         with self.l(
                             'for {variable}_x, {variable}_item in enumerate({variable}[{0}:], {0}):',
-                            len(self._definition['items'])
+                            len(items_definition)
                         ):
                             self.generate_func_code_block(
                                 self._definition['additionalItems'],
@@ -634,10 +642,10 @@ class CodeGenerator:
                                 '{}[{{{}_x}}]'.format(self._variable_name, self._variable),
                             )
             else:
-                if self._definition['items']:
+                if items_definition:
                     with self.l('for {variable}_x, {variable}_item in enumerate({variable}):'):
                         self.generate_func_code_block(
-                            self._definition['items'],
+                            items_definition,
                             '{}_item'.format(self._variable),
                             '{}[{{{}_x}}]'.format(self._variable_name, self._variable),
                         )

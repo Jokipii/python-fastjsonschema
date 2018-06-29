@@ -18,8 +18,6 @@ def pytest_generate_tests(metafunc):
         'valid definition',
         'dependencies with boolean subschemas',
         'dependencies with empty array',
-        'items with boolean schema (true)',
-        'items with boolean schema',
         'items with boolean schemas',
         'properties with boolean schema',
         'validation of IRIs',
