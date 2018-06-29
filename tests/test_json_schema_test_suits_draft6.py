@@ -6,7 +6,6 @@ def pytest_generate_tests(metafunc):
     ignored_suite_files = [
         'ecmascript-regex.json',
         'zeroTerminatedFloats.json',
-        'const.json',
     ]
     ignore_tests = [
         'invalid definition',
@@ -15,7 +14,6 @@ def pytest_generate_tests(metafunc):
         'dependencies with empty array',
         'items with boolean schemas',
         'properties with boolean schema',
-        'contains keyword validation',
         'contains keyword with const keyword',
     ]
 

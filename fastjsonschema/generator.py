@@ -124,6 +124,7 @@ class CodeGenerator:
                 ('dependencies', self.generate_dependencies),
                 ('propertyNames', self.generate_property_names),
                 ('contains', self.generate_contains),
+                ('const', self.generate_const),
             )),
             'http://json-schema.org/draft-07/schema#': OrderedDict((
                 ('type', self.generate_type),
@@ -154,6 +155,7 @@ class CodeGenerator:
                 ('dependencies', self.generate_dependencies),
                 ('propertyNames', self.generate_property_names),
                 ('contains', self.generate_contains),
+                ('const', self.generate_const),
             )),
         }
 
@@ -770,15 +772,36 @@ class CodeGenerator:
                     self.l('raise JsonSchemaException("{name} must contain only properties with correct name")')
 
     def generate_contains(self):
-        contains = self._definition['contains']
-        if contains is False:
-            self.l('raise JsonSchemaException("{name} has False boolean schema")')
+        contains_definition = self._definition['contains']
         with self.l('if isinstance({variable}, list):'):
-            with self.l('if not {variable}:'):
-                self.l('raise JsonSchemaException("{name} contains empty array is invalid")')
-            if contains is True:
-                with self.l('if {variable}:'):
-                    self.l('pass')
+            if contains_definition is False:
+                self.l('raise JsonSchemaException("{name} has False boolean schema")')
+            elif contains_definition is True:
+                with self.l('if not {variable}:'):
+                    self.l('raise JsonSchemaException("{name} contains empty array is invalid")')
             else:
-                # TODO implement
-                pass
+                with self.l('if not {variable}:'):
+                    self.l('raise JsonSchemaException("{name} contains empty array is invalid")')
+                self._generate_contains(contains_definition)
+
+    def _generate_contains(self, contains_definition):
+        with self._resolver.in_scope(self._variable_name):
+            name = self._resolver.get_scope_name() + '_contains'
+            uri = self._resolver.get_uri()
+            if uri not in self._validation_functions_done:
+                self._needed_validation_functions[uri] = name
+                self._resolver.store[uri] = contains_definition
+            self.l('found = False')
+            with self.l('for key in {variable}:'):
+                with self.l('try:'):
+                    # call validation function
+                    self.l('{}(key)', name)
+                    self.l('found = True')
+                with self.l('except JsonSchemaException:'):
+                    self.l('pass')
+            with self.l('if not found:'):
+                self.l('raise JsonSchemaException("{name} must contain at least some defined thing")')
+
+    def generate_const(self):
+        with self.l('if {variable} != {}:', self._definition['const']):
+            self.l('raise JsonSchemaException("{name} const not valid")')

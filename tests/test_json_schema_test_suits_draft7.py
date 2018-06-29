@@ -9,7 +9,6 @@ def pytest_generate_tests(metafunc):
         'content.json',
         'if-then-else.json',
         'relative-json-pointer.json',
-        'const.json',
     ]
     ignore_tests = [
         'invalid definition',
@@ -22,7 +21,6 @@ def pytest_generate_tests(metafunc):
         'validation of time strings',
         'remote ref, containing refs itself',
         'items with boolean schema (false)',
-        'contains keyword validation',
         'contains keyword with const keyword',
     ]
 
