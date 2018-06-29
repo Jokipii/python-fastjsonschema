@@ -17,8 +17,6 @@ def pytest_generate_tests(metafunc):
         'remote ref, containing refs itself',
         'dependencies with boolean subschemas',
         'dependencies with empty array',
-        'exclusiveMaximum validation',
-        'exclusiveMinimum validation',
         'items with boolean schema (true)',
         'items with boolean schema (false)',
         'items with boolean schema',

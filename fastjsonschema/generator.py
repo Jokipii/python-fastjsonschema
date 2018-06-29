@@ -107,7 +107,9 @@ class CodeGenerator:
                 ('pattern', self.generate_pattern),
                 ('format', self.generate_format),
                 ('minimum', self.generate_minimum),
+                ('exclusiveMinimum', self.generate_exclusive_minimum),
                 ('maximum', self.generate_maximum),
+                ('exclusiveMaximum', self.generate_exclusive_maximum),
                 ('multipleOf', self.generate_multiple_of),
                 ('minItems', self.generate_min_items),
                 ('maxItems', self.generate_max_items),
@@ -133,7 +135,9 @@ class CodeGenerator:
                 ('pattern', self.generate_pattern),
                 ('format', self.generate_format),
                 ('minimum', self.generate_minimum),
+                ('exclusiveMinimum', self.generate_exclusive_minimum),
                 ('maximum', self.generate_maximum),
+                ('exclusiveMaximum', self.generate_exclusive_maximum),
                 ('multipleOf', self.generate_multiple_of),
                 ('minItems', self.generate_min_items),
                 ('maxItems', self.generate_max_items),
@@ -510,6 +514,7 @@ class CodeGenerator:
 
     def generate_minimum(self):
         with self.l('if isinstance({variable}, (int, float)):'):
+            # check for draft-04 version of exclusiveMinimum
             if self._definition.get('exclusiveMinimum', False):
                 with self.l('if {variable} <= {minimum}:'):
                     self.l('raise JsonSchemaException("{name} must be bigger than {minimum}")')
@@ -519,12 +524,29 @@ class CodeGenerator:
 
     def generate_maximum(self):
         with self.l('if isinstance({variable}, (int, float)):'):
+            # check for draft-04 version of exclusiveMaximum
             if self._definition.get('exclusiveMaximum', False):
                 with self.l('if {variable} >= {maximum}:'):
                     self.l('raise JsonSchemaException("{name} must be smaller than {maximum}")')
             else:
                 with self.l('if {variable} > {maximum}:'):
                     self.l('raise JsonSchemaException("{name} must be smaller than or equal to {maximum}")')
+
+    def generate_exclusive_minimum(self):
+        """
+        Check for draft-06 and draft-07 version of exclusiveMinimum
+        """
+        with self.l('if isinstance({variable}, (int, float)):'):
+            with self.l('if {variable} <= {exclusiveMinimum}:'):
+                self.l('raise JsonSchemaException("{name} must be bigger than {exclusiveMinimum}")')
+
+    def generate_exclusive_maximum(self):
+        """
+        Check for draft-06 and draft-07 version of exclusiveMaximum
+        """
+        with self.l('if isinstance({variable}, (int, float)):'):
+            with self.l('if {variable} >= {exclusiveMaximum}:'):
+                self.l('raise JsonSchemaException("{name} must be smaller than {exclusiveMaximum}")')
 
     def generate_multiple_of(self):
         with self.l('if isinstance({variable}, (int, float)):'):
