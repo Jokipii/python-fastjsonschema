@@ -6,7 +6,6 @@ def pytest_generate_tests(metafunc):
     ignored_suite_files = [
         'ecmascript-regex.json',
         'zeroTerminatedFloats.json',
-        'contains.json',
         'content.json',
         'if-then-else.json',
         'relative-json-pointer.json',
@@ -23,6 +22,8 @@ def pytest_generate_tests(metafunc):
         'validation of time strings',
         'remote ref, containing refs itself',
         'items with boolean schema (false)',
+        'contains keyword validation',
+        'contains keyword with const keyword',
     ]
 
     param_values, param_ids = resolve_param_values_and_ids(

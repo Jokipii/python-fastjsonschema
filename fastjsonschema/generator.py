@@ -123,6 +123,7 @@ class CodeGenerator:
                 ('additionalProperties', self.generate_additional_properties),
                 ('dependencies', self.generate_dependencies),
                 ('propertyNames', self.generate_property_names),
+                ('contains', self.generate_contains),
             )),
             'http://json-schema.org/draft-07/schema#': OrderedDict((
                 ('type', self.generate_type),
@@ -152,6 +153,7 @@ class CodeGenerator:
                 ('additionalProperties', self.generate_additional_properties),
                 ('dependencies', self.generate_dependencies),
                 ('propertyNames', self.generate_property_names),
+                ('contains', self.generate_contains),
             )),
         }
 
@@ -754,7 +756,7 @@ class CodeGenerator:
 
     def _generate_property_names(self, property_names):
         with self._resolver.in_scope(self._variable_name):
-            name = self._resolver.get_scope_name()
+            name = self._resolver.get_scope_name() + '_property_names'
             uri = self._resolver.get_uri()
             if uri not in self._validation_functions_done:
                 self._needed_validation_functions[uri] = name
@@ -766,3 +768,17 @@ class CodeGenerator:
                     self.l('{}(key)', name)
                 except JsonSchemaException:
                     self.l('raise JsonSchemaException("{name} must contain only properties with correct name")')
+
+    def generate_contains(self):
+        contains = self._definition['contains']
+        if contains is False:
+            self.l('raise JsonSchemaException("{name} has False boolean schema")')
+        with self.l('if isinstance({variable}, list):'):
+            with self.l('if not {variable}:'):
+                self.l('raise JsonSchemaException("{name} contains empty array is invalid")')
+            if contains is True:
+                with self.l('if {variable}:'):
+                    self.l('pass')
+            else:
+                # TODO implement
+                pass

@@ -6,7 +6,6 @@ def pytest_generate_tests(metafunc):
     ignored_suite_files = [
         'ecmascript-regex.json',
         'zeroTerminatedFloats.json',
-        'contains.json',
         'const.json',
     ]
     ignore_tests = [
@@ -16,6 +15,8 @@ def pytest_generate_tests(metafunc):
         'dependencies with empty array',
         'items with boolean schemas',
         'properties with boolean schema',
+        'contains keyword validation',
+        'contains keyword with const keyword',
     ]
 
     param_values, param_ids = resolve_param_values_and_ids(
