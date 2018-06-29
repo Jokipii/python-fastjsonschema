@@ -19,8 +19,6 @@ def pytest_generate_tests(metafunc):
         'items with boolean schema (false)',
         'items with boolean schema',
         'items with boolean schemas',
-        'not with boolean schema true',
-        'not with boolean schema false',
         'properties with boolean schema',
     ]
 

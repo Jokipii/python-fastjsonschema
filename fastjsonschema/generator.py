@@ -471,12 +471,19 @@ class CodeGenerator:
 
         Valid values for this definitions are 'hello', 42, {} ... but not None.
         """
-        if not self._definition['not']:
+        not_definition = self._definition['not']
+        if not_definition is True:
+            # boolean schema True
+            self.l('raise JsonSchemaException("{name} must not be valid by not definition")')
+        elif not_definition is False:
+            # boolean schema False
+            pass
+        elif not not_definition:
             with self.l('if {}:', self._variable):
                 self.l('raise JsonSchemaException("{name} must not be valid by not definition")')
         else:
             with self.l('try:'):
-                self.generate_func_code_block(self._definition['not'], self._variable, self._variable_name)
+                self.generate_func_code_block(not_definition, self._variable, self._variable_name)
             self.l('except JsonSchemaException: pass')
             self.l('else: raise JsonSchemaException("{name} must not be valid by not definition")')
 
