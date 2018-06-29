@@ -305,7 +305,9 @@ class CodeGenerator:
             backup_variables = self._variables
             self._variables = set()
 
-        if '$ref' in definition:
+        if isinstance(definition, bool):
+            self.generate_boolean_schema()
+        elif '$ref' in definition:
             # needed because ref overrides any sibling keywords
             self.generate_ref()
         else:
@@ -713,3 +715,7 @@ class CodeGenerator:
                                 self.l('raise JsonSchemaException("{name} missing dependency {} for {}")', value, key)
                     else:
                         self.generate_func_code_block(values, self._variable, self._variable_name, clear_variables=True)
+
+    def generate_boolean_schema(self):
+        if self._definition is False:
+            self.l('raise JsonSchemaException("{name} has False boolean schema")')

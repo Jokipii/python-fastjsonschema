@@ -125,11 +125,11 @@ class RefResolver(object):
 
         """
         # if schema_version is defined in schema we use it
-        if '$schema' in schema:
+        if isinstance(schema, dict) and '$schema' in schema:
             schema_version = schema['$schema']
         meta_schema = MetaSchema(schema_version)
         return cls(
-            schema.get(meta_schema.id_type, ''),
+            schema.get(meta_schema.id_type, '') if isinstance(schema, dict) else '',
             schema,
             meta_schema=meta_schema,
             handlers=handlers,
@@ -188,7 +188,9 @@ class RefResolver(object):
         Walk thru schema and dereferencing ``id`` and ``$ref`` instances
         """
         _id = self.meta_schema.id_type
-        if '$ref' in node and isinstance(node['$ref'], str):
+        if isinstance(node, bool):
+            pass
+        elif '$ref' in node and isinstance(node['$ref'], str):
             ref = node['$ref']
             node['$ref'] = urlparse.urljoin(self.resolution_scope, ref)
         elif _id in node and isinstance(node[_id], str):
