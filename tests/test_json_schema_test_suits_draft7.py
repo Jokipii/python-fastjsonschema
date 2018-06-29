@@ -4,7 +4,6 @@ from test_json_schema_test_suits import template_test, resolve_param_values_and_
 def pytest_generate_tests(metafunc):
     suite_dir = 'JSON-Schema-Test-Suite/tests/draft7'
     ignored_suite_files = [
-        'bignum.json',
         'ecmascript-regex.json',
         'zeroTerminatedFloats.json',
         'contains.json',
