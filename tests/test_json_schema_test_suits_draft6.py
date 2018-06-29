@@ -21,14 +21,13 @@ def pytest_generate_tests(metafunc):
         'items with boolean schemas',
         'not with boolean schema true',
         'not with boolean schema false',
-        'propertyNames with boolean schema false',
         'propertyNames validation',
         'properties with boolean schema',
     ]
 
     param_values, param_ids = resolve_param_values_and_ids(
         suite_dir, 'draft6', ignored_suite_files, ignore_tests
-   )
+    )
     metafunc.parametrize(['schema', 'schema_version', 'data', 'is_valid'], param_values, ids=param_ids)
 
 test = template_test

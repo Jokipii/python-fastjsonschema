@@ -122,6 +122,7 @@ class CodeGenerator:
                 ('patternProperties', self.generate_pattern_properties),
                 ('additionalProperties', self.generate_additional_properties),
                 ('dependencies', self.generate_dependencies),
+                ('propertyNames', self.generate_property_names),
             )),
             'http://json-schema.org/draft-07/schema#': OrderedDict((
                 ('type', self.generate_type),
@@ -150,6 +151,7 @@ class CodeGenerator:
                 ('patternProperties', self.generate_pattern_properties),
                 ('additionalProperties', self.generate_additional_properties),
                 ('dependencies', self.generate_dependencies),
+                ('propertyNames', self.generate_property_names),
             )),
         }
 
@@ -719,3 +721,19 @@ class CodeGenerator:
     def generate_boolean_schema(self):
         if self._definition is False:
             self.l('raise JsonSchemaException("{name} has False boolean schema")')
+
+    def generate_property_names(self):
+        propertyNames = self._definition.get("propertyNames", {})
+        if propertyNames is False:
+            self.create_variable_keys()
+            with self.l('if {variable}_keys:'):
+                self.l('raise JsonSchemaException("{name} propertyNames with boolean schema false")')
+        elif propertyNames is True:
+            pass
+        else:
+            with self.l('if isinstance({variable}, dict):'):
+                with self.l('if len({variable}) == 0:'):
+                    self.l('pass')
+                with self.l('else:'):
+                    # TODO make validation function and call it with keys as data
+                    pass
