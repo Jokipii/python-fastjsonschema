@@ -723,17 +723,31 @@ class CodeGenerator:
             self.l('raise JsonSchemaException("{name} has False boolean schema")')
 
     def generate_property_names(self):
-        propertyNames = self._definition.get("propertyNames", {})
-        if propertyNames is False:
+        property_names = self._definition.get("propertyNames", {})
+        if property_names is False:
             self.create_variable_keys()
             with self.l('if {variable}_keys:'):
                 self.l('raise JsonSchemaException("{name} propertyNames with boolean schema false")')
-        elif propertyNames is True:
+        elif property_names is True:
             pass
         else:
             with self.l('if isinstance({variable}, dict):'):
                 with self.l('if len({variable}) == 0:'):
                     self.l('pass')
                 with self.l('else:'):
-                    # TODO make validation function and call it with keys as data
-                    pass
+                    self._generate_property_names(property_names)
+
+    def _generate_property_names(self, property_names):
+        with self._resolver.in_scope(self._variable_name):
+            name = self._resolver.get_scope_name()
+            uri = self._resolver.get_uri()
+            if uri not in self._validation_functions_done:
+                self._needed_validation_functions[uri] = name
+                self._resolver.store[uri] = property_names
+            self.create_variable_keys()
+            with self.l('for key in {variable}_keys:'):
+                try:
+                    # call validation function
+                    self.l('{}(key)', name)
+                except JsonSchemaException:
+                    self.l('raise JsonSchemaException("{name} must contain only properties with correct name")')

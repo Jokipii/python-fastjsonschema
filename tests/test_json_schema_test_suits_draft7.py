@@ -24,7 +24,6 @@ def pytest_generate_tests(metafunc):
         'not with boolean schema true',
         'not with boolean schema false',
         'properties with boolean schema',
-        'propertyNames validation',
         'validation of IRIs',
         'validation of time strings',
         'remote ref, containing refs itself',
