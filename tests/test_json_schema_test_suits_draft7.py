@@ -8,10 +8,7 @@ def pytest_generate_tests(metafunc):
         'content.json',
     ]
     ignore_tests = [
-        'invalid definition',
-        'valid definition',
         'validation of IRIs',
-        'remote ref, containing refs itself',
     ]
 
     param_values, param_ids = resolve_param_values_and_ids(

@@ -622,7 +622,7 @@ class CodeGenerator:
             self.create_variable_with_length()
             if items_definition is True:
                 # boolean schema True
-                pass
+                self.l('pass')
             elif items_definition is False:
                 # boolean schema False
                 with self.l('if {variable}:'):
