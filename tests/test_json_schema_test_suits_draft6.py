@@ -8,13 +8,8 @@ def pytest_generate_tests(metafunc):
         'zeroTerminatedFloats.json',
     ]
     ignore_tests = [
-        'invalid definition',
-        'valid definition',
-        'dependencies with boolean subschemas',
-        'dependencies with empty array',
         'items with boolean schemas',
         'properties with boolean schema',
-        'contains keyword with const keyword',
     ]
 
     param_values, param_ids = resolve_param_values_and_ids(

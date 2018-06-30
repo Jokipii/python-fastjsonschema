@@ -13,8 +13,6 @@ def pytest_generate_tests(metafunc):
     ignore_tests = [
         'invalid definition',
         'valid definition',
-        'dependencies with boolean subschemas',
-        'dependencies with empty array',
         'items with boolean schemas',
         'properties with boolean schema',
         'validation of IRIs',

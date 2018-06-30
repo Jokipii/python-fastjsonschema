@@ -730,7 +730,11 @@ class CodeGenerator:
             self.create_variable_keys()
             for key, values in self._definition["dependencies"].items():
                 with self.l('if "{}" in {variable}_keys:', key):
-                    if isinstance(values, list):
+                    if values == [] or values is True:
+                        self.l('pass')
+                    elif values is False:
+                        self.l('raise JsonSchemaException("{name} with false schema")')
+                    elif isinstance(values, list):
                         for value in values:
                             with self.l('if "{}" not in {variable}_keys:', value):
                                 self.l('raise JsonSchemaException("{name} missing dependency {} for {}")', value, key)
