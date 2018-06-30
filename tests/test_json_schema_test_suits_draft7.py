@@ -6,7 +6,6 @@ def pytest_generate_tests(metafunc):
     ignored_suite_files = [
         'ecmascript-regex.json',
         'content.json',
-        'if-then-else.json',
     ]
     ignore_tests = [
         'invalid definition',

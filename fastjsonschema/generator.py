@@ -156,6 +156,7 @@ class CodeGenerator:
                 ('propertyNames', self.generate_property_names),
                 ('contains', self.generate_contains),
                 ('const', self.generate_const),
+                ('if',  self.generate_if_then_else),
             )),
         }
 
@@ -816,3 +817,30 @@ class CodeGenerator:
     def generate_const(self):
         with self.l('if {variable} != {}:', self._definition['const']):
             self.l('raise JsonSchemaException("{name} const not valid")')
+
+    def generate_if_then_else(self):
+        with self.l('try:'):
+            self.generate_func_code_block(
+                self._definition['if'],
+                self._variable,
+                self._variable_name,
+                clear_variables=True
+            )
+        with self.l('except JsonSchemaException:'):
+            if 'else' in self._definition:
+                self.generate_func_code_block(
+                    self._definition['else'],
+                    self._variable,
+                    self._variable_name,
+                    clear_variables=True
+                )
+            else:
+                self.l('pass')
+        if 'then' in self._definition:
+            with self.l('else:'):
+                self.generate_func_code_block(
+                    self._definition['then'],
+                    self._variable,
+                    self._variable_name,
+                    clear_variables=True
+                )
