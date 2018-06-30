@@ -11,10 +11,7 @@ def pytest_generate_tests(metafunc):
         'invalid definition',
         'valid definition',
         'validation of IRIs',
-        'validation of time strings',
         'remote ref, containing refs itself',
-        'items with boolean schema (false)',
-        'contains keyword with const keyword',
     ]
 
     param_values, param_ids = resolve_param_values_and_ids(
