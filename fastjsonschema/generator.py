@@ -364,7 +364,7 @@ class CodeGenerator:
 
         extra = ''
         if 'integer' in types and self._resolver.meta_schema.version != 'draft4':
-            # for zeroTerminatedFloats.json
+            # for zeroTerminatedFloats.json in draft-06 and in draft-07
             # some languages do not distinguish between different types of numeric value
             # a float without fractional part is an integer
             extra += ' and not (isinstance({variable}, float) and {variable} % 1 == 0)'.format(
