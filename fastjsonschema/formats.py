@@ -18,22 +18,24 @@ DATE_REGEX = re.compile(
     r'^(?P<year>\d{4})-(?P<month>\d{1,2})-(?P<day>\d{1,2})$'
 )
 
-TIME_REGEX = re.compile(
-    r'^(?P<hour>\d{1,2}):(?P<minute>\d{1,2})'
-    r'(?::(?P<second>\d{1,2})(?:\.(?P<microsecond>\d{1,6}))?([zZ]|[+-]\d\d:\d\d)?)?$'
-)
-
 DATETIME_REGEX = re.compile(ISO_8601_DATETIME)
 
 EMAIL_REGEX = re.compile(EMAIL_ADDRESS)
+
+HOSTNAME_REGEX = re.compile(
+    r'^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*'
+    r'([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]{1,62}[A-Za-z0-9])$'
+)
 
 IPV4_REGEX = re.compile(IP_V4)
 
 IPV6_REGEX = re.compile(IP_V6, re.VERBOSE | re.IGNORECASE | re.DOTALL)
 
-HOSTNAME_REGEX = re.compile(
-    r'^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*'
-    r'([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]{1,62}[A-Za-z0-9])$'
+RELATIVE_JSON_POINTER_REGEX = re.compile(r'^(?:0|[1-9][0-9]*)(?:#|(?:\/(?:[^~/]|~0|~1)*)*)$')
+
+TIME_REGEX = re.compile(
+    r'^(?P<hour>\d{1,2}):(?P<minute>\d{1,2})'
+    r'(?::(?P<second>\d{1,2})(?:\.(?P<microsecond>\d{1,6}))?([zZ]|[+-]\d\d:\d\d)?)?$'
 )
 
 URI_REGEX = re.compile(r'^\w+:(\/?\/?)[^\s]+$')
@@ -53,6 +55,7 @@ FORMAT_REGEXS = {
     'hostname': HOSTNAME_REGEX,
     'ipv4': IPV4_REGEX,
     'ipv6': IPV6_REGEX,
+    'relative-json-pointer': RELATIVE_JSON_POINTER_REGEX,
     'time': TIME_REGEX,
     'uri': URI_REGEX,
     'uri-template': URI_TEMPLATE_REGEX,
@@ -113,19 +116,12 @@ def check_uri_reference(variable):
         return False
 
 
-def check_relative_json_pointer(variable):
-    if variable == '#':
-        return True
-    raise JsonSchemaException('not yet implemented')
-
-
 FORMAT_FUNCTIONS = {
     'idn-email': 'check_idn_email',
     'idn-hostname': 'check_idn_hostname',
     'iri': 'check_iri',
     'iri-reference': 'check_iri_reference',
     'json-pointer': 'check_json_pointer',
-    'relative-json-pointer': 'check_relative_json_pointer',
     'regex': 'check_regexp',
     'uri-reference': 'check_uri_reference',
 }

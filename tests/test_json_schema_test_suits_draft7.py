@@ -7,7 +7,6 @@ def pytest_generate_tests(metafunc):
         'ecmascript-regex.json',
         'content.json',
         'if-then-else.json',
-        'relative-json-pointer.json',
     ]
     ignore_tests = [
         'invalid definition',
