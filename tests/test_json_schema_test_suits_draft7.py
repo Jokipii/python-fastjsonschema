@@ -5,7 +5,6 @@ def pytest_generate_tests(metafunc):
     suite_dir = 'JSON-Schema-Test-Suite/tests/draft7'
     ignored_suite_files = [
         'ecmascript-regex.json',
-        'zeroTerminatedFloats.json',
         'content.json',
         'if-then-else.json',
         'relative-json-pointer.json',
@@ -13,7 +12,6 @@ def pytest_generate_tests(metafunc):
     ignore_tests = [
         'invalid definition',
         'valid definition',
-        'items with boolean schemas',
         'validation of IRIs',
         'validation of time strings',
         'remote ref, containing refs itself',

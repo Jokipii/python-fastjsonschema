@@ -363,8 +363,15 @@ class CodeGenerator:
         python_types = ', '.join(self.JSON_TYPE_TO_PYTHON_TYPE.get(t) for t in types)
 
         extra = ''
+        if 'integer' in types and self._resolver.meta_schema.version != 'draft4':
+            # for zeroTerminatedFloats.json
+            # some languages do not distinguish between different types of numeric value
+            # a float without fractional part is an integer
+            extra += ' and not (isinstance({variable}, float) and {variable} % 1 == 0)'.format(
+                variable=self._variable
+            )
         if ('number' in types or 'integer' in types) and 'boolean' not in types:
-            extra = ' or isinstance({variable}, bool)'.format(variable=self._variable)
+            extra += ' or isinstance({variable}, bool)'.format(variable=self._variable)
 
         with self.l('if not isinstance({variable}, ({})){}:', python_types, extra):
             self.l('raise JsonSchemaException("{name} must be {}")', ' or '.join(types))

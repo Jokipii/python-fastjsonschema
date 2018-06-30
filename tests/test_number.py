@@ -113,7 +113,7 @@ def test_multiple_of(asserter, number_type, value, expected):
 
 
 @pytest.mark.parametrize('value', (
-    1.0,
+    1.01,
     0.1,
     0.01,
     0.001,
