@@ -8,7 +8,6 @@ def pytest_generate_tests(metafunc):
         'zeroTerminatedFloats.json',
     ]
     ignore_tests = [
-        'items with boolean schemas',
     ]
 
     param_values, param_ids = resolve_param_values_and_ids(

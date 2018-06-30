@@ -628,7 +628,7 @@ class CodeGenerator:
                             '{}_{}'.format(self._variable, x),
                             '{}[{}]'.format(self._variable_name, x),
                         )
-                    if 'default' in item_definition:
+                    if isinstance(item_definition, dict) and 'default' in item_definition:
                         self.l('else: {variable}.append({})', repr(item_definition['default']))
 
                 if 'additionalItems' in self._definition:
