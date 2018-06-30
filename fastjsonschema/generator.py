@@ -688,7 +688,7 @@ class CodeGenerator:
                         '{}_{}'.format(self._variable, key_name),
                         '{}.{}'.format(self._variable_name, key),
                     )
-                if 'default' in prop_definition:
+                if isinstance(prop_definition, dict) and 'default' in prop_definition:
                     self.l('else: {variable}["{}"] = {}', key, repr(prop_definition['default']))
 
     def generate_pattern_properties(self):

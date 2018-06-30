@@ -9,7 +9,6 @@ def pytest_generate_tests(metafunc):
     ]
     ignore_tests = [
         'items with boolean schemas',
-        'properties with boolean schema',
     ]
 
     param_values, param_ids = resolve_param_values_and_ids(

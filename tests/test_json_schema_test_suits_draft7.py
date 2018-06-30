@@ -14,7 +14,6 @@ def pytest_generate_tests(metafunc):
         'invalid definition',
         'valid definition',
         'items with boolean schemas',
-        'properties with boolean schema',
         'validation of IRIs',
         'validation of time strings',
         'remote ref, containing refs itself',
