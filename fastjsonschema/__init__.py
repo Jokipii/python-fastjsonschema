@@ -30,17 +30,20 @@ You can try it for yourself with included script:
     validictory          valid      ==> 0.36818933801259845
     validictory          invalid    ==> 0.022672351042274386
 
-This library follows and implements `JSON schema draft-04 <http://json-schema.org>`_. Sometimes
-it's not perfectly clear so I recommend also check out this `understaning json schema
+This library follows and implements `JSON schema draft-04, draft-06,
+amd draft-07 <http://json-schema.org>`_. Sometimes it's not perfectly clear
+so I recommend also check out this `understaning json schema
 <https://spacetelescope.github.io/understanding-json-schema>`_.
 
 Note that there are some differences compared to JSON schema standard:
 
- * Regular expressions are full Python ones, not only what JSON schema allows. It's easier
-   to allow everything and also it's faster to compile without limits. So keep in mind that when
-   you will use more advanced regular expression, it may not work with other library.
- * JSON schema says you can use keyword ``default`` for providing default values. This implementation
-   uses that and always returns transformed input data.
+ * Regular expressions are full Python ones, not only what JSON schema allows.
+   It's easier to allow everything and also it's faster to compile without
+   limits. So keep in mind that when you will use more advanced regular
+   expression, it may not work with other library.
+ * JSON schema says you can use keyword ``default`` for providing default
+   values. This implementation uses that and always returns transformed
+   input data.
 
 Support only for Python 3.3 and higher.
 """

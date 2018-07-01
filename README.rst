@@ -17,7 +17,8 @@ least an order of magnitude faster than other Python implemantaions.
 See `documentation <https://seznam.github.io/python-fastjsonschema/>`_ for
 performance test details.
 
-Current version is implementation of `json-schema <http://json-schema.org/>`_ draft-04.
+Current version is implementation of `json-schema <http://json-schema.org/>`_
+draft-04, draft-06, and draft-07.
 Note that there are some differences compared to JSON schema standard:
 
 * Regular expressions are full Python ones, not only what JSON schema
