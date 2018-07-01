@@ -5,7 +5,6 @@ def pytest_generate_tests(metafunc):
     suite_dir = 'JSON-Schema-Test-Suite/tests/draft7'
     ignored_suite_files = [
         'ecmascript-regex.json',
-        'content.json',
     ]
     ignore_tests = [
     ]

@@ -156,7 +156,9 @@ class CodeGenerator:
                 ('propertyNames', self.generate_property_names),
                 ('contains', self.generate_contains),
                 ('const', self.generate_const),
-                ('if',  self.generate_if_then_else),
+                ('if', self.generate_if_then_else),
+                ('contentMediaType', self.generate_content_media_type),
+                ('contentEncoding', self.generate_content_encoding),
             )),
         }
 
@@ -844,3 +846,33 @@ class CodeGenerator:
                     self._variable_name,
                     clear_variables=True
                 )
+
+    def generate_content_media_type(self):
+        if 'contentEncoding' in self._definition:
+            # handled on generate_content_encoding
+            pass
+        else:
+            self._generate_content_media_type('str')
+
+    def _generate_content_media_type(self, variable_type):
+        if self._definition['contentMediaType'] == 'application/json':
+            with self.l('if isinstance({variable}, {}):', variable_type):
+                with self.l('try:'):
+                    self.l('import json')
+                    self.l('json.loads({variable})')
+                with self.l('except Exception:'):
+                    self.l('raise JsonSchemaException("{name} invalid json content")')
+
+    def generate_content_encoding(self):
+        if self._definition['contentEncoding'] == 'base64':
+            with self.l('if isinstance({variable}, str):'):
+                with self.l('try:'):
+                    self.l('import base64')
+                    self.l('{variable} = base64.b64decode({variable})')
+                with self.l('except Exception:'):
+                    self.l('raise JsonSchemaException("{name} invalid content encoding")')
+                with self.l('if {variable} == "":'):
+                    self.l('raise JsonSchemaException("{name} invalid content encoding")')
+        if 'contentMediaType' in self._definition:
+            # run now because skipped in generate_content_media_type
+            self._generate_content_media_type('bytes')
