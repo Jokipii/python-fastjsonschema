@@ -8,7 +8,6 @@ def pytest_generate_tests(metafunc):
         'content.json',
     ]
     ignore_tests = [
-        'validation of IRIs',
     ]
 
     param_values, param_ids = resolve_param_values_and_ids(
