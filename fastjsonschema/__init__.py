@@ -68,6 +68,7 @@ def compile(definition, handlers=None, schema_version='draft4'):
         that should be used to retrieve them.
     :argument str schema_version: Meta schema version where definition
         is created.
+    :returns: the validator instance specified by schema definition
 
     Exception :any:`JsonSchemaException` is thrown when validation fails.
 
@@ -99,7 +100,8 @@ def compile(definition, handlers=None, schema_version='draft4'):
     global_state = code_generator.global_state
     # Do not pass local state so it can recursively call itself.
     exec(code_generator.func_code, global_state)
-    return global_state[resolver.get_scope_name()]
+    _, name = resolver.get_scope_name()
+    return global_state[name]
 
 
 def compile_to_code(definition, handlers=None, schema_version='draft4'):
@@ -112,6 +114,7 @@ def compile_to_code(definition, handlers=None, schema_version='draft4'):
         that should be used to retrieve them.
     :argument str schema_version: Meta schema version where definition
         is created.
+    :returns: tuple(str, str): function name, actual code
 
     Exception :any:`JsonSchemaException` is thrown when validation fails.
 
@@ -129,14 +132,15 @@ def compile_to_code(definition, handlers=None, schema_version='draft4'):
 
     .. code-block:: bash
 
-        echo "{'type': 'string'}" | pytohn3 -m fastjsonschema > your_file.py
-        pytohn3 -m fastjsonschema "{'type': 'string'}" > your_file.py
+        echo '{"type": "string"}' | python3 -m fastjsonschema > your_file.py
+        python3 -m fastjsonschema '{"type": "string"}' > your_file.py
 
     """
-    _, code_generator = _factory(definition, schema_version, handlers)
-    return (
-        'VERSION = "' + VERSION + '"\n' +
+    resolver, code_generator = _factory(definition, schema_version, handlers)
+    _, name = resolver.get_scope_name()
+    return name, (
         code_generator.global_state_code + '\n' +
+        'VERSION = "' + VERSION + '"\n' +
         code_generator.func_code
     )
 

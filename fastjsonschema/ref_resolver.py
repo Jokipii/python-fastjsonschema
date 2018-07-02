@@ -1,5 +1,5 @@
 """
-JSON Schema URI resolution scopes and dereferencing
+JSON Schema URI resolution scopes and dereferencing.
 
 https://tools.ietf.org/id/draft-zyp-json-schema-04.html#rfc.section.7
 
@@ -43,6 +43,12 @@ def resolve_path(schema, fragment):
 
 
 def normalize(uri):
+    """
+    Normalize URI's.
+
+    :argument str uri: the URI to be normalized
+    :returns: normalized version of URI
+    """
     return urlparse.urlsplit(uri).geturl()
 
 
@@ -99,17 +105,14 @@ class RefResolver(object):
             cache=True,
             handlers=None
     ):
+        """Init."""
         self.base_uri = base_uri
         self.resolution_scope = base_uri
         self.schema = schema
         self.meta_schema = meta_schema
-        if store is None:
-            store = {}
-        self.store = store
+        self.store = store or {}
         self.cache = cache
-        if handlers is None:
-            handlers = {}
-        self.handlers = handlers
+        self.handlers = handlers or {}
         self.walk(schema)
 
     @classmethod
@@ -121,7 +124,7 @@ class RefResolver(object):
         :argument str schema_version: Meta schema version of the referring schema
         :argument dict handlers: A mapping from URI schemes to functions
             that should be used to retrieve them.
-        :rtyper: :class:`RefResolver`
+        :rtype: :class:`RefResolver`
 
         """
         # if schema_version is defined in schema we use it
@@ -137,7 +140,12 @@ class RefResolver(object):
         )
 
     @contextlib.contextmanager
-    def in_scope(self, scope):
+    def in_scope(self, scope: str):
+        """
+        Context manager to handle cprrent scope.
+
+        :argument str scope: new scope
+        """
         old_scope = self.resolution_scope
         self.resolution_scope = urlparse.urljoin(old_scope, scope)
         try:
@@ -146,13 +154,11 @@ class RefResolver(object):
             self.resolution_scope = old_scope
 
     @contextlib.contextmanager
-    def resolving(self, ref):
+    def resolving(self, ref: str):
         """
-        Context manager which resolves a JSON ``ref`` and enters the
-        resolution scope of this ref.
+        Context manager which resolves a JSON ``ref``.
 
         :argument str ref: reference to resolve
-
         """
         new_uri = urlparse.urljoin(self.resolution_scope, ref)
         uri, fragment = urlparse.urldefrag(new_uri)
@@ -174,18 +180,23 @@ class RefResolver(object):
         finally:
             self.base_uri, self.schema = old_base_uri, old_schema
 
-    def get_uri(self):
-        return normalize(self.resolution_scope)
+    def get_scope_name(self, postfix: str = ''):
+        """
+        Get current scope and return it in form where it is valid function name.
 
-    def get_scope_name(self):
+        :argument str postfix: Possible postfix for name
+        :rtyper: :(str, str): Uri, Function name based on current scope.
+        """
         name = 'validate_' + unquote(self.resolution_scope).replace('~1', '_').replace('~0', '_')
-        name = re.sub(r'[:/#\.\-\%]', '_', name)
+        name = re.sub(r'[:/#\.\-\%]', '_', name) + postfix
         name = name.lower().rstrip('_')
-        return name
+        return normalize(self.resolution_scope), name
 
     def walk(self, node: dict):
         """
-        Walk thru schema and dereferencing ``id`` and ``$ref`` instances
+        Walk thru schema and dereferencing ``id`` and ``$ref`` instances.
+
+        :argument dict node: Schema node.
         """
         _id = self.meta_schema.id_type
         if isinstance(node, bool):

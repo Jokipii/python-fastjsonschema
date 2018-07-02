@@ -1,3 +1,5 @@
+"""Main module."""
+
 import json
 import sys
 
@@ -11,7 +13,7 @@ def main():
         definition = sys.stdin.read()
 
     definition = json.loads(definition)
-    code = compile_to_code(definition)
+    _, code = compile_to_code(definition)
     print(code)
 
 

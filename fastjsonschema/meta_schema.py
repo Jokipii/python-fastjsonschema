@@ -1,3 +1,5 @@
+"""Meta schema module."""
+
 from .formats import FORMAT_FUNCTIONS, FORMAT_REGEXS
 
 
@@ -690,9 +692,12 @@ VERSION_TO_URI = {
 
 # pylint: disable=too-few-public-methods
 class MetaSchema(object):
+    """Meta schema for schema, defines rule set to be used for schema."""
+
     def __init__(self, version='draft4'):
+        """Initialize selectec version of meta schema."""
         self.version = version
-        self.uri = VERSION_TO_URI[version] if version in VERSION_TO_URI else version
+        self.uri = VERSION_TO_URI[version]
         self.id_type = URI_TO_ID_TYPE[self.uri]
         self.schema = URI_TO_SCHEMA[self.uri]
         self.format_regexs = URI_TO_FORMAT_REGEXS[self.uri]

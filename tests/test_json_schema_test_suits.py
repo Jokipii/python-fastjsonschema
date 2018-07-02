@@ -4,7 +4,7 @@ from pathlib import Path
 import requests
 from fastjsonschema import CodeGenerator, RefResolver, JsonSchemaException, compile
 
-remotes = {
+REMOTES = {
     'http://localhost:1234/integer.json': {'type': 'integer'},
     'http://localhost:1234/name.json': {
         'type': 'string',
@@ -18,10 +18,11 @@ remotes = {
     },
     'http://localhost:1234/folder/folderInteger.json': {'type': 'integer'}
 }
+
 def remotes_handler(uri):
     print(uri)
-    if uri in remotes:
-        return remotes[uri]
+    if uri in REMOTES:
+        return REMOTES[uri]
     return requests.get(uri).json()
 
 

@@ -1,3 +1,5 @@
+"""Module for format handling."""
+
 import re
 import jsonpointer
 import email_validator
@@ -10,8 +12,6 @@ from expynent.patterns import (
     IP_V4,
     IP_V6
 )
-
-from .exceptions import JsonSchemaException
 
 
 DATE_REGEX = re.compile(
@@ -62,10 +62,16 @@ FORMAT_REGEXS = {
 }
 
 
-def check_idn_email(variable):
+def is_valid_idn_email(variable):
+    """
+    Validate idn-emails.
+
+    :argument str variable: variable to validate.
+    :rtype: bool: False if invalid.
+    """
     try:
         return validate_email(
-            variable,
+            email=variable,
             allow_smtputf8=True,
             check_deliverability=False
         )
@@ -73,43 +79,79 @@ def check_idn_email(variable):
         return False
 
 
-def check_idn_hostname(variable):
+def is_valid_idn_hostname(variable):
+    """
+    Validate idn-hostnames.
+
+    :argument str variable: variable to validate.
+    :rtype: bool: False if invalid.
+    """
     try:
         return validate_email_domain_part(variable)
     except email_validator.EmailSyntaxError:
         return False
 
 
-def check_iri(variable):
+def is_valid_iri(variable):
+    """
+    Validate iRIs.
+
+    :argument str variable: variable to validate.
+    :rtype: bool: False if invalid.
+    """
     try:
         return rfc3987.parse(variable, rule="IRI")
     except ValueError:
         return False
 
 
-def check_iri_reference(variable):
+def is_valid_iri_reference(variable):
+    """
+    Validate IRI-references.
+
+    :argument str variable: variable to validate.
+    :rtype: bool: False if invalid.
+    """
     try:
         return rfc3987.parse(variable, rule="IRI_reference")
     except ValueError:
         return False
 
 
-def check_json_pointer(variable):
+def is_valid_json_pointer(variable):
+    """
+    Validate json-ponsters.
+
+    :argument str variable: variable to validate.
+    :rtype: bool: False if invalid.
+    """
     try:
-        return jsonpointer.JsonPointer(variable)
+        return jsonpointer.JsonPointer(pointer=variable)
     except jsonpointer.JsonPointerException:
         return False
 
 
-def check_regexp(variable):
+def is_valid_regexp(variable):
+    """
+    Validate regexp.
+
+    :argument str variable: variable to validate.
+    :rtype: bool: False if invalid.
+    """
     try:
-        re.compile(variable)
+        re.compile(pattern=variable)
         return True
     except re.error:
         return False
 
 
-def check_uri_reference(variable):
+def is_valid_uri_reference(variable):
+    """
+    Validate URI-references.
+
+    :argument str variable: variable to validate.
+    :rtype: bool: False if invalid.
+    """
     try:
         return rfc3987.parse(variable, rule="URI_reference")
     except ValueError:
@@ -117,11 +159,11 @@ def check_uri_reference(variable):
 
 
 FORMAT_FUNCTIONS = {
-    'idn-email': 'check_idn_email',
-    'idn-hostname': 'check_idn_hostname',
-    'iri': 'check_iri',
-    'iri-reference': 'check_iri_reference',
-    'json-pointer': 'check_json_pointer',
-    'regex': 'check_regexp',
-    'uri-reference': 'check_uri_reference',
+    'idn-email': 'is_valid_idn_email',
+    'idn-hostname': 'is_valid_idn_hostname',
+    'iri': 'is_valid_iri',
+    'iri-reference': 'is_valid_iri_reference',
+    'json-pointer': 'is_valid_json_pointer',
+    'regex': 'is_valid_regexp',
+    'uri-reference': 'is_valid_uri_reference',
 }

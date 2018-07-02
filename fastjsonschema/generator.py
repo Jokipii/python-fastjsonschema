@@ -66,7 +66,7 @@ class CodeGenerator:
         self._format_regexs = resolver.meta_schema.format_regexs
         self._format_functions = resolver.meta_schema.format_functions
         # add main function to `self._needed_validation_functions`
-        self._needed_validation_functions[self._resolver.get_uri()] = self._resolver.get_scope_name()
+        self._generate_function_from_scope()
 
         URI_TO_ELEMENT_FUNCTIONS = {
             'http://json-schema.org/draft-04/schema#': OrderedDict((
@@ -196,7 +196,7 @@ class CodeGenerator:
         Includes compiled regular expressions and imports.
         """
         imports = ['from fastjsonschema.formats import {}'.format(value) for value in self._import_formats]
-        if self._compile_regexps:
+        if not self._compile_regexps:
             return '\n'.join(
                 imports
                 + [
@@ -346,12 +346,23 @@ class CodeGenerator:
             }
         """
         with self._resolver.in_scope(self._definition['$ref']):
-            name = self._resolver.get_scope_name()
-            uri = self._resolver.get_uri()
-            if uri not in self._validation_functions_done:
-                self._needed_validation_functions[uri] = name
-            # call validation function
-            self.l('{}({variable})', name)
+            function_name = self._generate_function_from_scope()
+            self.l('{}({variable})', function_name)
+
+
+    def _generate_function_from_scope(self, definition=None, postfix=''):
+        """
+        Add function to generation queue if needed and return function name.
+
+        :argument str postfix: postfix for fucmtion name.
+        :rtype: str: Name of function
+        """
+        uri, function_name = self._resolver.get_scope_name(postfix)
+        if uri not in self._validation_functions_done:
+            self._needed_validation_functions[uri] = function_name
+            if definition:
+                self._resolver.store[uri] = definition
+        return function_name
 
     def generate_type(self):
         """
@@ -772,16 +783,15 @@ class CodeGenerator:
 
     def _generate_property_names(self, property_names):
         with self._resolver.in_scope(self._variable_name):
-            name = self._resolver.get_scope_name() + '_property_names'
-            uri = self._resolver.get_uri()
-            if uri not in self._validation_functions_done:
-                self._needed_validation_functions[uri] = name
-                self._resolver.store[uri] = property_names
+            function_name = self._generate_function_from_scope(
+                definition=property_names,
+                postfix='_property_names'
+            )
             self.create_variable_keys()
             with self.l('for key in {variable}_keys:'):
                 try:
                     # call validation function
-                    self.l('{}(key)', name)
+                    self.l('{}(key)', function_name)
                 except JsonSchemaException:
                     self.l('raise JsonSchemaException("{name} must contain only properties with correct name")')
 
@@ -800,16 +810,15 @@ class CodeGenerator:
 
     def _generate_contains(self, contains_definition):
         with self._resolver.in_scope(self._variable_name):
-            name = self._resolver.get_scope_name() + '_contains'
-            uri = self._resolver.get_uri()
-            if uri not in self._validation_functions_done:
-                self._needed_validation_functions[uri] = name
-                self._resolver.store[uri] = contains_definition
+            function_name = self._generate_function_from_scope(
+                definition=contains_definition,
+                postfix='_contains'
+            )
             self.l('found = False')
             with self.l('for key in {variable}:'):
                 with self.l('try:'):
                     # call validation function
-                    self.l('{}(key)', name)
+                    self.l('{}(key)', function_name)
                     self.l('found = True')
                 with self.l('except JsonSchemaException:'):
                     self.l('pass')
