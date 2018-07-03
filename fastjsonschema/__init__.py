@@ -133,8 +133,8 @@ def compile_to_code(definition, handlers=None, schema_version='draft4'):
 
     .. code-block:: bash
 
-        echo '{"type": "string"}' | python3 -m fastjsonschema > your_file.py
-        python3 -m fastjsonschema '{"type": "string"}' > your_file.py
+        echo '{"type": "string"}' | fastjsonschema > your_file.py
+        fastjsonschema '{"type": "string"}' > your_file.py
 
     """
     resolver, code_generator = _factory(definition, schema_version, handlers)

@@ -13,6 +13,7 @@ temp/
 .tox
 .testmondata
 .coverage
+.benchmarks
 
 # Deb files
 debian/files

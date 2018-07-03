@@ -1,10 +1,7 @@
 #!/usr/bin/env python
 import os
 
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup
+from setuptools import setup, find_packages
 
 with open(os.path.join(os.path.dirname(__file__), "README.rst")) as readme:
     LONG_DESCRIPTION = readme.read()
@@ -19,7 +16,8 @@ except NameError:
 setup(
     name='fastjsonschema',
     version=VERSION,
-    packages=['fastjsonschema'],
+    packages=find_packages(),
+    include_package_data=True,
 
     install_requires=[
         'requests',
@@ -27,6 +25,7 @@ setup(
         'email_validator',
         'rfc3987',
         'expynent',
+        'Click',
     ],
     extras_require={
         'devel': [
@@ -41,7 +40,10 @@ setup(
             'pytest-benchmark',
         ],
     },
-
+    entry_points='''
+        [console_scripts]
+        fastjsonschema=fastjsonschema.__main__:main
+    ''',
     url='https://github.com/seznam/python-fastjsonschema',
     author='Michal Horejsek',
     author_email='horejsekmichal@gmail.com',
