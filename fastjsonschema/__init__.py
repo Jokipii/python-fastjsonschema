@@ -1,5 +1,7 @@
 """
-This project was made to come up with fast JSON validations. Just let's see some numbers first:
+This project was made to come up with fast JSON validations.
+
+Just let's see some numbers first:
 
  * Probalby most popular ``jsonschema`` can take in tests up to 5 seconds for valid inputs
    and 1.2 seconds for invalid inputs.
@@ -61,7 +63,7 @@ __all__ = ('VERSION', 'JsonSchemaException', 'compile', 'compile_to_code')
 # pylint: disable=redefined-builtin,exec-used
 def compile(definition, handlers=None, schema_version='draft4'):
     """
-    Generates validation function for validating JSON schema by ``definition``.
+    Generate validation function for validating JSON schema by ``definition``.
 
     :argument dict definition: Json schema definition
     :argument dict handlers: A mapping from URI schemes to functions
@@ -106,9 +108,8 @@ def compile(definition, handlers=None, schema_version='draft4'):
 
 def compile_to_code(definition, handlers=None, schema_version='draft4'):
     """
-    Generates validation function for validating JSON schema by ``definition``
-    and returns compiled code.
-
+    Generate validation function as plain Python code.
+    
     :argument dict definition: Json schema definition
     :argument dict handlers: A mapping from URI schemes to functions
         that should be used to retrieve them.

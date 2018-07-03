@@ -7,6 +7,7 @@ from . import compile_to_code
 
 
 def main():
+    """Entry point from commandline."""
     if len(sys.argv) == 2:
         definition = sys.argv[1]
     else:

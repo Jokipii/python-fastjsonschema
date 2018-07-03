@@ -35,18 +35,16 @@ def asserter():
 
 @pytest.fixture
 def asserter_cc():
-    def f(definition, value, expected):
+    def f(definition, value, expected, filename):
         # When test fails, it will show up code.
-        resolver, code_generator = _factory(definition, handlers={})
-        print(code_generator.func_code)
-        pprint(code_generator.global_state)
-
         name, code = compile_to_code(definition)
+        print(code)
+
         if not os.path.isdir('temp'):
             os.makedirs('temp')
-        with open('temp/schemaa.py', 'w') as f:
+        with open('temp/' + filename + '.py', 'w') as f:
             f.write(code)
-        validator = getattr(importlib.import_module('temp.schemaa'), name)
+        validator = getattr(importlib.import_module('temp.' + filename), name)
         if isinstance(expected, JsonSchemaException):
             with pytest.raises(JsonSchemaException) as exc:
                 validator(value)
