@@ -75,8 +75,9 @@ fast_compiled = lambda value, _: fastjsonschema_validate(value)
 
 fast_not_compiled = lambda value, json_schema: fastjsonschema.compile(json_schema)(value)
 
+name, code = fastjsonschema.compile_to_code(JSON_SCHEMA)
 with open('temp/performance.py', 'w') as f:
-    f.write(fastjsonschema.compile_to_code(JSON_SCHEMA))
+    f.write(code)
 from temp.performance import validate
 fast_file = lambda value, _: validate(value)
 
