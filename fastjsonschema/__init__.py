@@ -109,7 +109,7 @@ def compile(definition, handlers=None, schema_version='draft4'):
 def compile_to_code(definition, handlers=None, schema_version='draft4'):
     """
     Generate validation function as plain Python code.
-    
+
     :argument dict definition: Json schema definition
     :argument dict handlers: A mapping from URI schemes to functions
         that should be used to retrieve them.

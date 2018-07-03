@@ -694,7 +694,7 @@ VERSION_TO_URI = {
 class MetaSchema(object):
     """
     Meta schema for schema, defines rule set to be used for schema validation.
-    
+
     Meta schema selection set on elements that can ne used, what is actual id element,
     what formats are supported. etc...
     """

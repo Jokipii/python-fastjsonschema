@@ -116,12 +116,18 @@ class RefResolver(object):
         self.walk(schema)
 
     @classmethod
-    def from_schema(cls, schema, schema_version='draft4', handlers=None, **kwargs):
+    def from_schema(
+        cls,
+        schema,
+        schema_version='draft4',
+        handlers=None,
+        **kwargs
+    ):
         """
         Construct a resolver from a JSON schema object.
 
         :argument dict schema: the referring schema
-        :argument str schema_version: Meta schema version of the referring schema
+        :argument str schema_version: Meta schema version
         :argument dict handlers: A mapping from URI schemes to functions
             that should be used to retrieve them.
         :rtype: :class:`RefResolver`
@@ -131,8 +137,9 @@ class RefResolver(object):
         if isinstance(schema, dict) and '$schema' in schema:
             schema_version = schema['$schema']
         meta_schema = MetaSchema(schema_version)
+        id_type = meta_schema.id_type
         return cls(
-            schema.get(meta_schema.id_type, '') if isinstance(schema, dict) else '',
+            schema.get(id_type, '') if isinstance(schema, dict) else '',
             schema,
             meta_schema=meta_schema,
             handlers=handlers,
@@ -180,14 +187,15 @@ class RefResolver(object):
         finally:
             self.base_uri, self.schema = old_base_uri, old_schema
 
-    def get_scope_name(self, postfix: str = ''):
+    def get_scope_name(self, postfix: str=''):
         """
-        Get current scope and return it in form where it is valid function name.
+        Get current scope and return it as a valid function name.
 
         :argument str postfix: Possible postfix for name
         :rtyper: :(str, str): Uri, Function name based on current scope.
         """
-        name = 'validate_' + unquote(self.resolution_scope).replace('~1', '_').replace('~0', '_')
+        name = 'validate_' + unquote(
+            self.resolution_scope).replace('~1', '_').replace('~0', '_')
         name = re.sub(r'[:/#\.\-\%]', '_', name) + postfix
         name = name.lower().rstrip('_')
         return normalize(self.resolution_scope), name

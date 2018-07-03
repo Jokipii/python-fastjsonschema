@@ -174,7 +174,7 @@ class CodeGenerator:
     def l(self, line, *args, **kwds):
         """
         Short-cut of line. Used for inserting line.
-        
+
         It's formated with parameters ``variable``, ``variable_name`` (as ``name``
         for short-cut), all keys from current JSON schema ``definition`` and also
         passed arguments in ``args`` and named ``kwds``.
@@ -565,7 +565,7 @@ class CodeGenerator:
     def generate_unique_items(self):
         """
         Generate valiudator for item definitions.
-        
+
         With Python 3.4 module ``timeit`` recommended this solutions:
 
         .. code-block:: python
