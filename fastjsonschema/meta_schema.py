@@ -692,12 +692,21 @@ VERSION_TO_URI = {
 
 # pylint: disable=too-few-public-methods
 class MetaSchema(object):
-    """Meta schema for schema, defines rule set to be used for schema."""
+    """
+    Meta schema for schema, defines rule set to be used for schema validation.
+    
+    Meta schema selection set on elements that can ne used, what is actual id element,
+    what formats are supported. etc...
+    """
 
     def __init__(self, version='draft4'):
-        """Initialize selectec version of meta schema."""
-        self.version = version
-        self.uri = VERSION_TO_URI[version]
+        """
+        Initialize selectec version of meta schema.
+
+        :argument str version: version string or version URI.
+        """
+        self.uri = VERSION_TO_URI[version] if version in VERSION_TO_URI else version
+        self.version = self.uri
         self.id_type = URI_TO_ID_TYPE[self.uri]
         self.schema = URI_TO_SCHEMA[self.uri]
         self.format_regexs = URI_TO_FORMAT_REGEXS[self.uri]

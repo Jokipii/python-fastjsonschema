@@ -5,7 +5,6 @@
 #  \/   \/           If you look at it, you might die.
 #
 
-from collections import OrderedDict
 import re
 import importlib
 
@@ -67,106 +66,52 @@ class CodeGenerator:
         self._validation_functions_done = set()
 
         self._resolver = resolver
-        self._format_regexs = resolver.meta_schema.format_regexs
-        self._format_functions = resolver.meta_schema.format_functions
         # add main function to `self._needed_validation_functions`
         self._generate_function_from_scope()
 
-        URI_TO_ELEMENT_FUNCTIONS = {
-            'http://json-schema.org/draft-04/schema#': OrderedDict((
-                ('type', self.generate_type),
-                ('enum', self.generate_enum),
-                ('allOf', self.generate_all_of),
-                ('anyOf', self.generate_any_of),
-                ('oneOf', self.generate_one_of),
-                ('not', self.generate_not),
-                ('minLength', self.generate_min_length),
-                ('maxLength', self.generate_max_length),
-                ('pattern', self.generate_pattern),
-                ('format', self.generate_format),
-                ('minimum', self.generate_minimum),
-                ('maximum', self.generate_maximum),
-                ('multipleOf', self.generate_multiple_of),
-                ('minItems', self.generate_min_items),
-                ('maxItems', self.generate_max_items),
-                ('uniqueItems', self.generate_unique_items),
-                ('items', self.generate_items),
-                ('minProperties', self.generate_min_properties),
-                ('maxProperties', self.generate_max_properties),
-                ('required', self.generate_required),
-                ('properties', self.generate_properties),
-                ('patternProperties', self.generate_pattern_properties),
-                ('additionalProperties', self.generate_additional_properties),
-                ('dependencies', self.generate_dependencies),
-            )),
-            'http://json-schema.org/draft-06/schema#': OrderedDict((
-                ('type', self.generate_type),
-                ('enum', self.generate_enum),
-                ('allOf', self.generate_all_of),
-                ('anyOf', self.generate_any_of),
-                ('oneOf', self.generate_one_of),
-                ('not', self.generate_not),
-                ('minLength', self.generate_min_length),
-                ('maxLength', self.generate_max_length),
-                ('pattern', self.generate_pattern),
-                ('format', self.generate_format),
-                ('minimum', self.generate_minimum),
-                ('exclusiveMinimum', self.generate_exclusive_minimum),
-                ('maximum', self.generate_maximum),
-                ('exclusiveMaximum', self.generate_exclusive_maximum),
-                ('multipleOf', self.generate_multiple_of),
-                ('minItems', self.generate_min_items),
-                ('maxItems', self.generate_max_items),
-                ('uniqueItems', self.generate_unique_items),
-                ('items', self.generate_items),
-                ('minProperties', self.generate_min_properties),
-                ('maxProperties', self.generate_max_properties),
-                ('required', self.generate_required),
-                ('properties', self.generate_properties),
-                ('patternProperties', self.generate_pattern_properties),
-                ('additionalProperties', self.generate_additional_properties),
-                ('dependencies', self.generate_dependencies),
-                ('propertyNames', self.generate_property_names),
-                ('contains', self.generate_contains),
-                ('const', self.generate_const),
-            )),
-            'http://json-schema.org/draft-07/schema#': OrderedDict((
-                ('type', self.generate_type),
-                ('enum', self.generate_enum),
-                ('allOf', self.generate_all_of),
-                ('anyOf', self.generate_any_of),
-                ('oneOf', self.generate_one_of),
-                ('not', self.generate_not),
-                ('minLength', self.generate_min_length),
-                ('maxLength', self.generate_max_length),
-                ('pattern', self.generate_pattern),
-                ('format', self.generate_format),
-                ('minimum', self.generate_minimum),
-                ('exclusiveMinimum', self.generate_exclusive_minimum),
-                ('maximum', self.generate_maximum),
-                ('exclusiveMaximum', self.generate_exclusive_maximum),
-                ('multipleOf', self.generate_multiple_of),
-                ('minItems', self.generate_min_items),
-                ('maxItems', self.generate_max_items),
-                ('uniqueItems', self.generate_unique_items),
-                ('items', self.generate_items),
-                ('minProperties', self.generate_min_properties),
-                ('maxProperties', self.generate_max_properties),
-                ('required', self.generate_required),
-                ('properties', self.generate_properties),
-                ('patternProperties', self.generate_pattern_properties),
-                ('additionalProperties', self.generate_additional_properties),
-                ('dependencies', self.generate_dependencies),
-                ('propertyNames', self.generate_property_names),
-                ('contains', self.generate_contains),
-                ('const', self.generate_const),
-                ('if', self.generate_if_then_else),
-                ('contentMediaType', self.generate_content_media_type),
-                ('contentEncoding', self.generate_content_encoding),
-            )),
-        }
 
-        self._json_keywords_to_function = URI_TO_ELEMENT_FUNCTIONS[self._resolver.meta_schema.uri]
+        self._json_keywords_to_function = {
+            'type': self.generate_type,
+            'enum': self.generate_enum,
+            'allOf': self.generate_all_of,
+            'anyOf': self.generate_any_of,
+            'oneOf': self.generate_one_of,
+            'not': self.generate_not,
+            'minLength': self.generate_min_length,
+            'maxLength': self.generate_max_length,
+            'pattern': self.generate_pattern,
+            'format': self.generate_format,
+            'minimum': self.generate_minimum,
+            'maximum': self.generate_maximum,
+            'multipleOf': self.generate_multiple_of,
+            'minItems': self.generate_min_items,
+            'maxItems': self.generate_max_items,
+            'uniqueItems': self.generate_unique_items,
+            'items': self.generate_items,
+            'minProperties': self.generate_min_properties,
+            'maxProperties': self.generate_max_properties,
+            'required': self.generate_required,
+            'properties': self.generate_properties,
+            'patternProperties': self.generate_pattern_properties,
+            'additionalProperties': self.generate_additional_properties,
+            'dependencies': self.generate_dependencies,
+        }
+        version = self._resolver.meta_schema.uri
+
+        if version != 'http://json-schema.org/draft-04/schema#':
+            self._json_keywords_to_function.update({
+                'exclusiveMinimum': self.generate_exclusive_minimum,
+                'exclusiveMaximum': self.generate_exclusive_maximum,
+                'propertyNames': self.generate_property_names,
+                'contains': self.generate_contains,
+                'const': self.generate_const,
+            })
+            if version != 'http://json-schema.org/draft-06/schema#':
+                self._json_keywords_to_function.update({
+                    'if': self.generate_if_then_else,
+                    'contentMediaType': self.generate_content_media_type,
+                    'contentEncoding': self.generate_content_encoding,
+                })
 
         self.generate_func_code()
 
@@ -375,11 +320,11 @@ class CodeGenerator:
         python_types = ', '.join(self.JSON_TYPE_TO_PYTHON_TYPE.get(t) for t in types)
 
         extra = ''
-        if 'integer' in types and self._resolver.meta_schema.version != 'draft4':
+        if 'integer' in types and self._resolver.meta_schema.uri != "http://json-schema.org/draft-04/schema#":
             # for zeroTerminatedFloats.json in draft-06 and in draft-07
             # some languages do not distinguish between different types of numeric value
             # a float without fractional part is an integer
-            extra += ' and not (isinstance({variable}, float) and {variable} % 1 == 0)'.format(
+            extra += ' and not (isinstance({variable}, float) and {variable}.is_integer())'.format(
                 variable=self._variable
             )
         if ('number' in types or 'integer' in types) and 'boolean' not in types:
@@ -545,12 +490,14 @@ class CodeGenerator:
         """Gnerate validator for format definition."""
         with self.l('if isinstance({variable}, str):'):
             format_ = self._definition['format']
-            if format_ in self._format_regexs:
-                format_regex = self._format_regexs[format_]
+            format_regexs = self._resolver.meta_schema.format_regexs
+            if format_ in format_regexs:
+                format_regex = format_regexs[format_]
                 self._generate_format(format_, format_ + '_re_pattern', format_regex)
-            if format_ in self._format_functions:
-                self._import_formats.add(self._format_functions[format_])
-                with self.l('if not {}({variable}):', self._format_functions[format_]):
+            format_functions = self._resolver.meta_schema.format_functions
+            if format_ in format_functions:
+                self._import_formats.add(format_functions[format_])
+                with self.l('if not {}({variable}):', format_functions[format_]):
                     self.l('raise JsonSchemaException("{name} must be a valid {}")', format_)
 
     def _generate_format(self, format_name, regexp_name, regexp):

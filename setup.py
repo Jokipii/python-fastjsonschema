@@ -38,6 +38,7 @@ setup(
             'pytest-cache',
             'validictory',
             'pydocstyle',
+            'pytest-benchmark',
         ],
     },
 

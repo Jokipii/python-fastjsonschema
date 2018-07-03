@@ -3,17 +3,15 @@ import os
 import sys
 import importlib
 
-
-current_dir = os.path.abspath(os.path.dirname(__file__))
-sys.path.insert(0, os.path.join(current_dir, os.pardir))
-
-
 from pprint import pprint
 
 import pytest
 
 from fastjsonschema import JsonSchemaException, compile, compile_to_code, _factory
 from fastjsonschema.generator import CodeGenerator
+
+current_dir = os.path.abspath(os.path.dirname(__file__))
+sys.path.insert(0, os.path.join(current_dir, os.pardir))
 
 
 @pytest.fixture
@@ -32,6 +30,7 @@ def asserter():
         else:
             assert validator(value) == expected
     return f
+
 
 @pytest.fixture
 def asserter_cc():
