@@ -64,7 +64,7 @@ def test_bench_ref_resolver(benchmark):
 
 
 @pytest.mark.skip
-echo -e '\E[32;46m'@pytest.mark.benchmark(
+@pytest.mark.benchmark(
     min_time=0.01,
     max_time=2,
     min_rounds=20,
