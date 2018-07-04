@@ -838,15 +838,20 @@ class CodeGenerator:
             # handled on generate_content_encoding
             pass
         else:
-            self._generate_content_media_type('str')
+            self._generate_content_media_type()
 
-    def _generate_content_media_type(self, variable_type):
+    def _generate_content_media_type(self):
         """Handle contentMediaType if type is json."""
         if self._definition['contentMediaType'] == 'application/json':
-            with self.l('if isinstance({variable}, {}):', variable_type):
+            with self.l('if isinstance({variable}, bytes):'):
+                with self.l('try:'):
+                    self.l('{variable} = {variable}.decode("utf-8")')
+                with self.l('except Exception:'):
+                    self.l('raise JsonSchemaException("{name} invalid encoding")')
+            with self.l('if isinstance({variable}, str):'):
                 with self.l('try:'):
                     self.l('import json')
-                    self.l('json.loads({variable})')
+                    self.l('{variable} = json.loads({variable})')
                 with self.l('except Exception:'):
                     self.l('raise JsonSchemaException("{name} invalid json content")')
 
@@ -863,4 +868,4 @@ class CodeGenerator:
                     self.l('raise JsonSchemaException("{name} invalid content encoding")')
         if 'contentMediaType' in self._definition:
             # run now because skipped in generate_content_media_type
-            self._generate_content_media_type('bytes')
+            self._generate_content_media_type()
