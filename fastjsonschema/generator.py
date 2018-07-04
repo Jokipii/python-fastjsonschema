@@ -7,6 +7,7 @@
 
 import re
 import importlib
+from collections import OrderedDict
 
 from .exceptions import JsonSchemaException
 from .indent import indent
@@ -70,48 +71,48 @@ class CodeGenerator:
         self._generate_function_from_scope()
 
 
-        self._json_keywords_to_function = {
-            'type': self.generate_type,
-            'enum': self.generate_enum,
-            'allOf': self.generate_all_of,
-            'anyOf': self.generate_any_of,
-            'oneOf': self.generate_one_of,
-            'not': self.generate_not,
-            'minLength': self.generate_min_length,
-            'maxLength': self.generate_max_length,
-            'pattern': self.generate_pattern,
-            'format': self.generate_format,
-            'minimum': self.generate_minimum,
-            'maximum': self.generate_maximum,
-            'multipleOf': self.generate_multiple_of,
-            'minItems': self.generate_min_items,
-            'maxItems': self.generate_max_items,
-            'uniqueItems': self.generate_unique_items,
-            'items': self.generate_items,
-            'minProperties': self.generate_min_properties,
-            'maxProperties': self.generate_max_properties,
-            'required': self.generate_required,
-            'properties': self.generate_properties,
-            'patternProperties': self.generate_pattern_properties,
-            'additionalProperties': self.generate_additional_properties,
-            'dependencies': self.generate_dependencies,
-        }
+        self._json_keywords_to_function = OrderedDict((
+            ('type', self.generate_type),
+            ('enum', self.generate_enum),
+            ('allOf', self.generate_all_of),
+            ('anyOf', self.generate_any_of),
+            ('oneOf', self.generate_one_of),
+            ('not', self.generate_not),
+            ('minLength', self.generate_min_length),
+            ('maxLength', self.generate_max_length),
+            ('pattern', self.generate_pattern),
+            ('format', self.generate_format),
+            ('minimum', self.generate_minimum),
+            ('maximum', self.generate_maximum),
+            ('multipleOf', self.generate_multiple_of),
+            ('minItems', self.generate_min_items),
+            ('maxItems', self.generate_max_items),
+            ('uniqueItems', self.generate_unique_items),
+            ('items', self.generate_items),
+            ('minProperties', self.generate_min_properties),
+            ('maxProperties', self.generate_max_properties),
+            ('required', self.generate_required),
+            ('properties', self.generate_properties),
+            ('patternProperties', self.generate_pattern_properties),
+            ('additionalProperties', self.generate_additional_properties),
+            ('dependencies', self.generate_dependencies),
+        ))
         version = self._resolver.meta_schema.uri
 
         if version != 'http://json-schema.org/draft-04/schema#':
-            self._json_keywords_to_function.update({
-                'exclusiveMinimum': self.generate_exclusive_minimum,
-                'exclusiveMaximum': self.generate_exclusive_maximum,
-                'propertyNames': self.generate_property_names,
-                'contains': self.generate_contains,
-                'const': self.generate_const,
-            })
+            self._json_keywords_to_function.update((
+                ('exclusiveMinimum', self.generate_exclusive_minimum),
+                ('exclusiveMaximum', self.generate_exclusive_maximum),
+                ('propertyNames', self.generate_property_names),
+                ('contains', self.generate_contains),
+                ('const', self.generate_const),
+            ))
             if version != 'http://json-schema.org/draft-06/schema#':
-                self._json_keywords_to_function.update({
-                    'if': self.generate_if_then_else,
-                    'contentMediaType': self.generate_content_media_type,
-                    'contentEncoding': self.generate_content_encoding,
-                })
+                self._json_keywords_to_function.update((
+                    ('if', self.generate_if_then_else),
+                    ('contentMediaType', self.generate_content_media_type),
+                    ('contentEncoding', self.generate_content_encoding),
+                ))
 
         self.generate_func_code()
 

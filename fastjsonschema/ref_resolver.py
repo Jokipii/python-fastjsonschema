@@ -1,6 +1,7 @@
 """
-JSON Schema URI resolution scopes and dereferencing.
+Module for JSON reference resolving.
 
+Specification: JSON Schema URI resolution scopes and dereferencing.
 https://tools.ietf.org/id/draft-zyp-json-schema-04.html#rfc.section.7
 
 Code adapted from https://github.com/Julian/jsonschema
@@ -187,7 +188,7 @@ class RefResolver(object):
         finally:
             self.base_uri, self.schema = old_base_uri, old_schema
 
-    def get_scope_name(self, postfix: str=''):
+    def get_scope_name(self, postfix: str = ''):
         """
         Get current scope and return it as a valid function name.
 
