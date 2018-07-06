@@ -77,6 +77,7 @@ class Config(object):
             uri_handlers: dict = None,
             cache_refs: bool = True,
             validate_schema: bool = False,
+            include_version: bool = False,
     ):
         """
         Create ``fastjsonschema.Config`` object.
@@ -92,6 +93,8 @@ class Config(object):
             first resolution. Default True.
         :argument bool validate_schema: whether schema should be validated
             against it meta schema. Default False.
+        :argument bool include_version: whether library version is included
+            in generated code. Default False.
         :returns: the Configuration.
         """
 
@@ -99,6 +102,7 @@ class Config(object):
         self.uri_handlers = uri_handlers if uri_handlers else {}
         self.cache_refs = cache_refs
         self.validate_schema = validate_schema
+        self.include_version = include_version
 
 
 # pylint: disable=redefined-builtin,exec-used
@@ -172,11 +176,7 @@ def compile_to_code(definition, config=None):
 
     """
     name, code_generator = _factory(definition, config)
-    return name, (
-        code_generator.global_state_code + '\n' +
-        '__version__ = "' + __version__ + '"\n' +
-        code_generator.func_code
-    )
+    return name, code_generator.global_state_code
 
 
 def _factory(schema, config=None):

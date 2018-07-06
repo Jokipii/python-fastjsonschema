@@ -731,5 +731,5 @@ class MetaSchema(object):
             self.validator(data)
         except JsonSchemaException as error:
             raise JsonSchemaException(
-                'Schema is not valid, reaspn: ' + error.message
+                'Schema is not valid againts meta schema, reason: ' + error.message
             )

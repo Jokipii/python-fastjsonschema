@@ -9,6 +9,7 @@ import re
 import importlib
 from collections import OrderedDict
 
+from .version import __version__
 from .exceptions import JsonSchemaException
 from .indent import indent
 from .ref_resolver import RefResolver
@@ -145,30 +146,32 @@ class CodeGenerator:
 
         Includes compiled regular expressions and imports.
         """
-        imports = ['from fastjsonschema.formats import {}'.format(value) for value in self._import_formats]
-        if not self._compile_regexps:
-            return '\n'.join(
-                imports
-                + [
-                    'from fastjsonschema import JsonSchemaException',
-                    '',
-                    '',
-                ]
-            )
-        regexs = ['"{}": {}'.format(key, value) for key, value in self._compile_regexps.items()]
-        return '\n'.join(
-            ['import re']
-            + imports
-            + [
-                'from fastjsonschema import JsonSchemaException',
-                '',
-                '',
-                'REGEX_PATTERNS = {',
-                '    ' + ',\n    '.join(regexs),
-                '}',
-                '',
+        result = []
+        if self._compile_regexps:
+            result.append('import re')
+        result.extend(
+            [
+                'from fastjsonschema.formats import {}'.format(value)
+                for value in self._import_formats
             ]
         )
+        result.append('from fastjsonschema import JsonSchemaException')
+        result.append('')
+        if self._compile_regexps:
+            regexs = [
+                '"{}": {}'.format(key, value)
+                for key, value in self._compile_regexps.items()
+            ]
+            result.extend([
+                'REGEX_PATTERNS = {',
+                '    ' + ',\n    '.join(regexs),
+                '}\n',
+            ])
+        if self._resolver.config.include_version:
+            result.append('__version__ = "' + __version__ + '"')
+        result.append('')
+        result.extend(self._code)
+        return '\n'.join(result) + '\n'
 
     # pylint: disable=invalid-name
     @indent

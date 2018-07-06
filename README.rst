@@ -29,6 +29,15 @@ Note that there are some differences compared to JSON schema standard:
   values. This implementation uses that and always returns transformed
   input data.
 
+Features
+--------
+
+* Compatible with draft-04, draft-06, and draft-07
+* Fast validation
+* Commandline usage
+* Validation function as code
+* Easy to extend
+
 Install
 -------
 

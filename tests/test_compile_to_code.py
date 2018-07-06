@@ -1,6 +1,6 @@
 import pytest
 
-from fastjsonschema import JsonSchemaException, compile_to_code
+from fastjsonschema import JsonSchemaException, compile_to_code, Config
 from fastjsonschema.generator import CodeGenerator
 from fastjsonschema.ref_resolver import RefResolver
 
@@ -47,7 +47,6 @@ def test_compile_to_code_with_regex(asserter_cc, value, expected, filename):
 )
 def test_bench_ref_resolver(benchmark):
 
-    @benchmark
     def get_resolver():
         return RefResolver.from_schema(
             schema={
@@ -56,11 +55,10 @@ def test_bench_ref_resolver(benchmark):
                     'b': {'type': 'integer'},
                 }
             },
-            schema_version='draft4',
-            handlers={}
+            config=Config()
         )
 
-    benchmark(get_resolver())
+    benchmark(get_resolver)
 
 
 @pytest.mark.skip
@@ -72,18 +70,14 @@ def test_bench_ref_resolver(benchmark):
 )
 def test_bench_code_gen(benchmark):
 
-    @benchmark
-    def get_code_gen():
-        resolver = RefResolver.from_schema(
-            schema={
-                'properties': {
-                    'a': {'type': 'string', 'pattern': '[ab]'},
-                    'b': {'type': 'integer'},
-                }
-            },
-            schema_version='draft4',
-            handlers={}
-        )
-        return CodeGenerator(resolver=resolver)
+    current_resolver = RefResolver.from_schema(
+        schema={
+            'properties': {
+                'a': {'type': 'string', 'pattern': '[ab]'},
+                'b': {'type': 'integer'},
+            }
+        },
+        config=Config()
+    )
 
-    benchmark(get_code_gen)
+    benchmark(CodeGenerator, resolver=current_resolver)
