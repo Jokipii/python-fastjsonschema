@@ -69,13 +69,13 @@ VALUES_BAD = (
     [9, 'hello', [1, 'a', True], {'a': 'a', 'b': 'b', 'x': 'x'}, 42, 15],
 )
 
-
-fastjsonschema_validate = fastjsonschema.compile(JSON_SCHEMA)
+config = fastjsonschema.Config(schema_version='draft4')
+fastjsonschema_validate = fastjsonschema.compile(JSON_SCHEMA, config=config)
 fast_compiled = lambda value, _: fastjsonschema_validate(value)
 
-fast_not_compiled = lambda value, json_schema: fastjsonschema.compile(json_schema)(value)
+fast_not_compiled = lambda value, json_schema: fastjsonschema.compile(json_schema, config=config)(value)
 
-name, code = fastjsonschema.compile_to_code(JSON_SCHEMA)
+name, code = fastjsonschema.compile_to_code(JSON_SCHEMA, config=config)
 with open('temp/performance.py', 'w') as f:
     f.write(code)
 from temp.performance import validate
