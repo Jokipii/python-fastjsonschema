@@ -16,7 +16,7 @@ import json
 import requests
 
 from fastjsonschema.meta_schema import MetaSchema
-from .exceptions import JsonSchemaException
+from fastjsonschema.exceptions import JsonSchemaException
 
 
 def resolve_path(schema: dict, fragment: str):
@@ -88,10 +88,10 @@ class RefResolver(object):
     # pylint: disable=too-many-arguments
     def __init__(
             self,
-            base_uri,
-            schema,
-            meta_schema,
-            config=None,
+            base_uri: str,
+            schema: dict,
+            meta_schema: str,
+            config,
     ):
         """
         Construct a resolver from a JSON schema object.
@@ -110,6 +110,8 @@ class RefResolver(object):
         self.config = config
         self.uri_cache = {}
         self.walk(schema)
+        if self.config.validate_schema:
+            meta_schema.validator(schema)
 
     @classmethod
     def from_schema(cls, schema, config):
