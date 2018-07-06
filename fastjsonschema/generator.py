@@ -157,9 +157,9 @@ class CodeGenerator:
             )
         regexs = ['"{}": {}'.format(key, value) for key, value in self._compile_regexps.items()]
         return '\n'.join(
-            imports
+            ['import re']
+            + imports
             + [
-                'import re',
                 'from fastjsonschema import JsonSchemaException',
                 '',
                 '',
@@ -305,7 +305,7 @@ class CodeGenerator:
         if uri not in self._validation_functions_done:
             self._needed_validation_functions[uri] = function_name
             if definition:
-                self._resolver.store[uri] = definition
+                self._resolver.uri_cache[uri] = definition
         return function_name
 
     def generate_type(self):

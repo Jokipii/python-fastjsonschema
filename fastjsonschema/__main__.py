@@ -7,7 +7,7 @@ import click
 
 # pylint: disable=redefined-builtin
 from . import compile, compile_to_code, JsonSchemaException
-from .version import VERSION
+from .version import __version__
 
 
 @click.command()
@@ -71,7 +71,7 @@ def main(schema, output, output_file, schema_file, validate_file, python_schema)
     validator = None
 
     if output != '-' or validate_file:
-        click.secho('Fast JSON schema validator - version {}'.format(VERSION), fg='green')
+        click.secho('Fast JSON schema validator - version {}'.format(__version__), fg='green')
 
     if schema_file:
         with click.open_file(schema_file, mode='r', encoding='utf-8') as file_handle:

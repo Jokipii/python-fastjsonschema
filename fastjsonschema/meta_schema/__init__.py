@@ -1,7 +1,20 @@
 """Meta schema module."""
 
-from .formats import FORMAT_FUNCTIONS, FORMAT_REGEXS
+__all__ = ("MetaSchema")
 
+from fastjsonschema.formats import FORMAT_FUNCTIONS, FORMAT_REGEXS
+from fastjsonschema.meta_schema.draft4 import validate_http_json_schema_org_draft_04_schema
+from fastjsonschema.meta_schema.draft6 import validate_http_json_schema_org_draft_06_schema
+from fastjsonschema.meta_schema.draft7 import validate_http_json_schema_org_draft_07_schema
+
+URI_TO_VALIDATOR = {
+    'http://json-schema.org/draft-04/schema#':
+    validate_http_json_schema_org_draft_04_schema,
+    'http://json-schema.org/draft-06/schema#':
+    validate_http_json_schema_org_draft_06_schema,
+    'http://json-schema.org/draft-07/schema#':
+    validate_http_json_schema_org_draft_07_schema,
+}
 
 DRAFT_04_SCHEMA = {
     'id': 'http://json-schema.org/draft-04/schema#',
@@ -709,5 +722,6 @@ class MetaSchema(object):
         self.version = self.uri
         self.id_type = URI_TO_ID_TYPE[self.uri]
         self.schema = URI_TO_SCHEMA[self.uri]
+        self.validator = URI_TO_VALIDATOR[self.uri]
         self.format_regexs = URI_TO_FORMAT_REGEXS[self.uri]
         self.format_functions = URI_TO_FORMAT_FUNCTIONS[self.uri]

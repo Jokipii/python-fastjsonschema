@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.join(current_dir, os.pardir))
 def asserter():
     def f(definition, value, expected):
         # When test fails, it will show up code.
-        resolver, code_generator = _factory(definition, handlers={})
+        resolver, code_generator = _factory(definition)
         print(code_generator.func_code)
         pprint(code_generator.global_state)
 

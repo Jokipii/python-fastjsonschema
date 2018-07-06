@@ -1,4 +1,4 @@
-"""Module for exceptions."""
+"""Define all fastjsonschema exceptions."""
 
 class JsonSchemaException(ValueError):
     """

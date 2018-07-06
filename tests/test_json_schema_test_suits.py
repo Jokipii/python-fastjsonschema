@@ -2,7 +2,7 @@ import json
 import pytest
 from pathlib import Path
 import requests
-from fastjsonschema import CodeGenerator, RefResolver, JsonSchemaException, compile
+from fastjsonschema import Config, CodeGenerator, RefResolver, JsonSchemaException, compile
 
 REMOTES = {
     'http://localhost:1234/integer.json': {'type': 'integer'},
@@ -57,11 +57,12 @@ def resolve_param_values_and_ids(suite_dir, schema_version, ignored_suite_files,
 
 
 def template_test(schema, schema_version, data, is_valid):
+    config = Config(schema_version=schema_version, uri_handlers={'http': remotes_handler})
     # For debug purposes. When test fails, it will print stdout.
-    resolver = RefResolver.from_schema(schema, schema_version=schema_version, handlers={'http': remotes_handler})
+    resolver = RefResolver.from_schema(schema, config=config)
     print(CodeGenerator(resolver=resolver).func_code)
 
-    validate = compile(schema, schema_version=schema_version, handlers={'http': remotes_handler})
+    validate = compile(schema, config)
     try:
         result = validate(data)
         print('Validate result:', result)

@@ -36,7 +36,7 @@ Install
 
     pip install fastjsonschema
 
-Support for Python 3.3 and higher.
+Support for Python 3.4 and higher.
 
 Documentation
 -------------

@@ -3,16 +3,18 @@ This project was made to come up with fast JSON validations.
 
 Just let's see some numbers first:
 
- * Probalby most popular ``jsonschema`` can take in tests up to 5 seconds for valid inputs
-   and 1.2 seconds for invalid inputs.
- * Secondly most popular ``json-spec`` is even worse with up to 7.2 and 1.7 seconds.
- * Lastly ``validictory`` is much better with 370 or 23 miliseconds, but it does not
-   follow all standards and it can be still slow for some purposes.
+ * Probalby most popular ``jsonschema`` can take in tests up to 5 seconds
+   for valid inputs and 1.2 seconds for invalid inputs.
+ * Secondly most popular ``json-spec`` is even worse with up to 7.2 and
+   1.7 seconds.
+ * Lastly ``validictory`` is much better with 370 or 23 miliseconds, but it
+   does not follow all standards and it can be still slow for some purposes.
 
-That's why this project exists. It compiles definition into Python most stupid code
-which people would had hard time to write by themselfs because of not-written-rule DRY
-(don't repeat yourself). When you compile definition, then times are 25 miliseconds for
-valid inputs and less than 2 miliseconds for invalid inputs. Pretty amazing, right? :-)
+That's why this project exists. It compiles definition into Python most
+stupid code which people would had hard time to write by themselfs because
+of not-written-rule DRY (don't repeat yourself). When you compile definition,
+then times are 25 miliseconds for valid inputs and less than 2 miliseconds
+for invalid inputs. Pretty amazing, right? :-)
 
 You can try it for yourself with included script:
 
@@ -47,7 +49,7 @@ Note that there are some differences compared to JSON schema standard:
    values. This implementation uses that and always returns transformed
    input data.
 
-Support only for Python 3.3 and higher.
+Support only for Python 3.4 and higher.
 """
 
 from os.path import exists
@@ -55,21 +57,47 @@ from os.path import exists
 from .exceptions import JsonSchemaException
 from .generator import CodeGenerator
 from .ref_resolver import RefResolver
-from .version import VERSION
+from .version import __version__
 
-__all__ = ('VERSION', 'JsonSchemaException', 'compile', 'compile_to_code')
+__all__ = ('__version__', 'Config', 'JsonSchemaException', 'compile', 'compile_to_code')
+
+
+class Config(object):
+    """Configuration options."""
+
+    def __init__(
+            self,
+            schema_version: str = "draft4",
+            uri_handlers: dict = None,
+            cache_refs: bool = True,
+    ):
+        """
+        Create ``fastjsonschema.Config`` object.
+
+        :argument str schema_version: Meta schema version where definition
+            is created. This is used if schema itsef doesn't have
+            valid refeerence ``$scheme``. Default is ```draft4``.
+        :argument dict handlers: A mapping from ``URI schemes`` as ``str``
+            to functions that should be used to retrieve schema parts.
+            Function must ta ke ``uri`` as argument and return valid schema
+            as ``dict`` or throw ``JsonSchemaException``.
+        :argument bool cache_refs: whether remote refs should be cached after
+            first resolution.
+        :returns: the Configuration.
+        """
+
+        self.schema_version = schema_version
+        self.uri_handlers = uri_handlers if uri_handlers else {}
+        self.cache_refs = cache_refs
 
 
 # pylint: disable=redefined-builtin,exec-used
-def compile(definition, handlers=None, schema_version='draft4'):
+def compile(definition, config=None):
     """
     Generate validation function for validating JSON schema by ``definition``.
 
     :argument dict definition: Json schema definition
-    :argument dict handlers: A mapping from URI schemes to functions
-        that should be used to retrieve them.
-    :argument str schema_version: Meta schema version where definition
-        is created.
+    :argument Config config: Config object
     :returns: the validator instance specified by schema definition
 
     Exception :any:`JsonSchemaException` is thrown when validation fails.
@@ -98,24 +126,20 @@ def compile(definition, handlers=None, schema_version='draft4'):
         assert data == {'a': 42}
 
     """
-    resolver, code_generator = _factory(definition, schema_version, handlers)
+    name, code_generator = _factory(definition, config)
     global_state = code_generator.global_state
     # Do not pass local state so it can recursively call itself.
     exec(code_generator.func_code, global_state)
-    _, name = resolver.get_scope_name()
     return global_state[name]
 
 
-def compile_to_code(definition, handlers=None, schema_version='draft4'):
+def compile_to_code(definition, config=None):
     """
     Generate validation function as plain Python code.
 
     :argument dict definition: Json schema definition
-    :argument dict handlers: A mapping from URI schemes to functions
-        that should be used to retrieve them.
-    :argument str schema_version: Meta schema version where definition
-        is created.
-    :returns: tuple(str, str): function name, actual code
+    :argument Config config: Config object
+    :returns: tuple(str, str): main validation function name, actual code
 
     Exception :any:`JsonSchemaException` is thrown when validation fails.
 
@@ -137,20 +161,17 @@ def compile_to_code(definition, handlers=None, schema_version='draft4'):
         fastjsonschema '{"type": "string"}' > your_file.py
 
     """
-    resolver, code_generator = _factory(definition, schema_version, handlers)
-    _, name = resolver.get_scope_name()
+    name, code_generator = _factory(definition, config)
     return name, (
         code_generator.global_state_code + '\n' +
-        'VERSION = "' + VERSION + '"\n' +
+        '__version__ = "' + __version__ + '"\n' +
         code_generator.func_code
     )
 
 
-def _factory(schema, schema_version='draft4', handlers=None):
-    resolver = RefResolver.from_schema(
-        schema=schema,
-        schema_version=schema_version,
-        handlers=handlers
-    )
+def _factory(schema, config=None):
+    config = config if config else Config()
+    resolver = RefResolver.from_schema(schema=schema, config=config)
     code_generator = CodeGenerator(resolver=resolver)
-    return resolver, code_generator
+    _, name = resolver.get_scope_name()
+    return name, code_generator

@@ -6,16 +6,21 @@ from setuptools import setup, find_packages
 with open(os.path.join(os.path.dirname(__file__), "README.rst")) as readme:
     LONG_DESCRIPTION = readme.read()
 
+# Get the version string. Cannot be done with import!
 # https://packaging.python.org/en/latest/single_source_version.html
 try:
     execfile('fastjsonschema/version.py')
 except NameError:
-    exec(open('fastjsonschema/version.py').read())
+    with open(os.path.join('fastjsonschema', 'version.py'), 'rt') as version_file:
+        VERSION_GLOBALS = {}
+        # pylint: disable=exec-used
+        exec(version_file.read(), VERSION_GLOBALS)
+        __version__ = VERSION_GLOBALS['__version__']
 
 
 setup(
     name='fastjsonschema',
-    version=VERSION,
+    version=__version__,
     packages=find_packages(),
     include_package_data=True,
 
