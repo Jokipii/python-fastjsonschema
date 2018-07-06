@@ -1,3 +1,4 @@
+# pylint: skip-file
 import re
 from fastjsonschema.formats import is_valid_uri_reference
 from fastjsonschema.formats import is_valid_regexp

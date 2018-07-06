@@ -49,7 +49,10 @@ from .version import __version__
     type=click.STRING,
     default='-',
 )
-def main(schema, output, output_file, schema_file, validate_file, python_schema):
+# pylint: disable=too-many-arguments
+def main(
+        schema, output, output_file, schema_file, validate_file, python_schema
+):
     """
     Ccommand line usage examples
 
@@ -71,13 +74,20 @@ def main(schema, output, output_file, schema_file, validate_file, python_schema)
     validator = None
 
     if output != '-' or validate_file:
-        click.secho('Fast JSON schema validator - version {}'.format(__version__), fg='green')
+        click.secho(
+            'Fast JSON schema validator - version {}'.format(__version__),
+            fg='green'
+        )
 
     if schema_file:
-        with click.open_file(schema_file, mode='r', encoding='utf-8') as file_handle:
+        with click.open_file(
+            schema_file, mode='r', encoding='utf-8'
+        ) as file_handle:
             definition = file_handle.read()
     elif schema == '-':
-        with click.open_file(schema, mode='r', encoding='utf-8') as file_handle:
+        with click.open_file(
+            schema, mode='r', encoding='utf-8'
+        ) as file_handle:
             definition = file_handle.read()
     elif python_schema:
         click.echo('here')
@@ -104,7 +114,9 @@ def main(schema, output, output_file, schema_file, validate_file, python_schema)
             return False
 
     if output_file:
-        with click.open_file(output_file, mode='w', encoding='utf-8') as file_handle:
+        with click.open_file(
+            output_file, mode='w', encoding='utf-8'
+        ) as file_handle:
             click.echo(code, file=file_handle)
         if not output == '-':
             click.echo(''.join([

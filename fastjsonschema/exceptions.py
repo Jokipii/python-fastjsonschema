@@ -1,5 +1,6 @@
 """Define all fastjsonschema exceptions."""
 
+
 class JsonSchemaException(ValueError):
     """
     Base exception.

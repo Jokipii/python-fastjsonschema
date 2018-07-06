@@ -67,10 +67,12 @@ from .generator import CodeGenerator
 from .ref_resolver import RefResolver
 from .version import __version__
 
+
 # pylint: disable=too-few-public-methods
 class Config(object):
     """Configuration options."""
 
+    # pylint: disable=too-many-arguments
     def __init__(
             self,
             schema_version: str = "draft7",
