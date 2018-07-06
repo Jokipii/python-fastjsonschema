@@ -74,7 +74,24 @@ from .version import __version__
 
 # pylint: disable=too-few-public-methods
 class Config(object):
-    """Configuration options."""
+    """
+    Configuration options.
+    
+    :argument str schema_version: Meta schema version where definition
+        is created. This is used if schema itsef doesn't have
+        valid refeerence ``$scheme``. Default is ```draft7``.
+    :argument dict handlers: A mapping from ``URI schemes`` as ``str``
+        to functions that should be used to retrieve schema parts.
+        Function must ta ke ``uri`` as argument and return valid schema
+        as ``dict`` or throw ``JsonSchemaException``.
+    :argument bool cache_refs: whether remote refs should be cached after
+        first resolution. Default True.
+    :argument bool validate_schema: whether schema should be validated
+        against it meta schema. Default False.
+    :argument bool include_version: whether library version is included
+        in generated code. Default False.
+    :returns: the Configuration.
+"""
 
     # pylint: disable=too-many-arguments
     def __init__(
@@ -85,25 +102,7 @@ class Config(object):
             validate_schema: bool = False,
             include_version: bool = False,
     ):
-        """
-        Create ``fastjsonschema.Config`` object.
-
-        :argument str schema_version: Meta schema version where definition
-            is created. This is used if schema itsef doesn't have
-            valid refeerence ``$scheme``. Default is ```draft7``.
-        :argument dict handlers: A mapping from ``URI schemes`` as ``str``
-            to functions that should be used to retrieve schema parts.
-            Function must ta ke ``uri`` as argument and return valid schema
-            as ``dict`` or throw ``JsonSchemaException``.
-        :argument bool cache_refs: whether remote refs should be cached after
-            first resolution. Default True.
-        :argument bool validate_schema: whether schema should be validated
-            against it meta schema. Default False.
-        :argument bool include_version: whether library version is included
-            in generated code. Default False.
-        :returns: the Configuration.
-        """
-
+        """Init."""
         self.schema_version = schema_version
         self.uri_handlers = uri_handlers if uri_handlers else {}
         self.cache_refs = cache_refs

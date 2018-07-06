@@ -2,7 +2,7 @@
 all: sphinx
 
 BUILDDIR=../../python-fastjsonschema-doc
-SPHINXOPTS=-n -W -d $(BUILDDIR)/doctrees .
+SPHINXOPTS=-W -d $(BUILDDIR)/doctrees .
 
 .PHONY: sphinx
 sphinx:

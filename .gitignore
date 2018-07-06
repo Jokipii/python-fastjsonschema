@@ -27,6 +27,7 @@ build/
 _build/
 dist/
 venv/
+python-fastjsonschema-doc/
 
 # Editors
 .vscode
