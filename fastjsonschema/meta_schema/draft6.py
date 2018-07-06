@@ -2,14 +2,14 @@
 import re
 from fastjsonschema.formats import is_valid_uri_reference
 from fastjsonschema.formats import is_valid_regexp
-from fastjsonschema import JsonSchemaException
+from fastjsonschema.exceptions import JsonSchemaException
 
 
 REGEX_PATTERNS = {
     "uri_re_pattern": re.compile('^\\w+:(\\/?\\/?)[^\\s]+$')
 }
 
-__version__ = "1.6"
+
 NoneType = type(None)
 
 def validate_http_json_schema_org_draft_06_schema(data):

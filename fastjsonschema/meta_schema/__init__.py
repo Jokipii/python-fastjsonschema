@@ -2,7 +2,7 @@
 
 __all__ = ("MetaSchema")
 
-from fastjsonschema import JsonSchemaException
+from fastjsonschema.exceptions import JsonSchemaException
 from fastjsonschema.formats import FORMAT_FUNCTIONS, FORMAT_REGEXS
 from fastjsonschema.meta_schema.draft4 import validate_http_json_schema_org_draft_04_schema
 from fastjsonschema.meta_schema.draft6 import validate_http_json_schema_org_draft_06_schema

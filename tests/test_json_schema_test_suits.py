@@ -2,7 +2,9 @@ import json
 import pytest
 from pathlib import Path
 import requests
-from fastjsonschema import Config, CodeGenerator, RefResolver, JsonSchemaException, compile
+from fastjsonschema import Config, JsonSchemaException, compile
+from fastjsonschema.generator import CodeGenerator
+from fastjsonschema.ref_resolver import RefResolver
 
 REMOTES = {
     'http://localhost:1234/integer.json': {'type': 'integer'},

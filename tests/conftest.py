@@ -7,7 +7,7 @@ from pprint import pprint
 
 import pytest
 
-from fastjsonschema import JsonSchemaException, compile, compile_to_code, _factory, Config
+from fastjsonschema import JsonSchemaException, compile, compile_to_code, Config, _factory
 from fastjsonschema.generator import CodeGenerator
 
 current_dir = os.path.abspath(os.path.dirname(__file__))

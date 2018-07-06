@@ -142,11 +142,11 @@ class CodeGenerator:
     @property
     def global_state_code(self):
         """
-        Return global variables for generating function from ``func_code`` as code.
+        Return definirion as code.
 
         Includes compiled regular expressions and imports.
         """
-        result = []
+        result = ['# pylint: skip-file']
         if self._compile_regexps:
             result.append('import re')
         result.extend(
@@ -155,7 +155,7 @@ class CodeGenerator:
                 for value in self._import_formats
             ]
         )
-        result.append('from fastjsonschema import JsonSchemaException')
+        result.append('from fastjsonschema.exceptions import JsonSchemaException')
         result.append('')
         if self._compile_regexps:
             regexs = [
@@ -171,7 +171,7 @@ class CodeGenerator:
             result.append('__version__ = "' + __version__ + '"')
         result.append('')
         result.extend(self._code)
-        return '\n'.join(result) + '\n'
+        return '\n'.join(result)
 
     # pylint: disable=invalid-name
     @indent

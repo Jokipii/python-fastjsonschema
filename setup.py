@@ -47,7 +47,7 @@ setup(
     },
     entry_points='''
         [console_scripts]
-        fastjsonschema=fastjsonschema.__main__:main
+        fastjsonschema=fastjsonschema.__init__:main
     ''',
     url='https://github.com/seznam/python-fastjsonschema',
     author='Michal Horejsek',
