@@ -110,8 +110,6 @@ class RefResolver(object):
         self.config = config
         self.uri_cache = {}
         self.walk(schema)
-        if self.config.validate_schema:
-            meta_schema.validator(schema)
 
     @classmethod
     def from_schema(cls, schema, config):

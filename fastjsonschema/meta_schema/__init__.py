@@ -2,6 +2,7 @@
 
 __all__ = ("MetaSchema")
 
+from fastjsonschema import JsonSchemaException
 from fastjsonschema.formats import FORMAT_FUNCTIONS, FORMAT_REGEXS
 from fastjsonschema.meta_schema.draft4 import validate_http_json_schema_org_draft_04_schema
 from fastjsonschema.meta_schema.draft6 import validate_http_json_schema_org_draft_06_schema
@@ -703,7 +704,6 @@ VERSION_TO_URI = {
 }
 
 
-# pylint: disable=too-few-public-methods
 class MetaSchema(object):
     """
     Meta schema for schema, defines rule set to be used for schema validation.
@@ -725,3 +725,11 @@ class MetaSchema(object):
         self.validator = URI_TO_VALIDATOR[self.uri]
         self.format_regexs = URI_TO_FORMAT_REGEXS[self.uri]
         self.format_functions = URI_TO_FORMAT_FUNCTIONS[self.uri]
+
+    def validate(self, data):
+        try:
+            self.validator(data)
+        except JsonSchemaException as error:
+            raise JsonSchemaException(
+                'Schema is not valid, reaspn: ' + error.message
+            )

@@ -52,6 +52,14 @@ Note that there are some differences compared to JSON schema standard:
 Support only for Python 3.4 and higher.
 """
 
+__all__ = (
+    '__version__',
+    'Config',
+    'JsonSchemaException',
+    'compile',
+    'compile_to_code'
+)
+
 from os.path import exists
 
 from .exceptions import JsonSchemaException
@@ -59,9 +67,7 @@ from .generator import CodeGenerator
 from .ref_resolver import RefResolver
 from .version import __version__
 
-__all__ = ('__version__', 'Config', 'JsonSchemaException', 'compile', 'compile_to_code')
-
-
+# pylint: disable=too-few-public-methods
 class Config(object):
     """Configuration options."""
 
@@ -176,6 +182,10 @@ def compile_to_code(definition, config=None):
 def _factory(schema, config=None):
     config = config if config else Config()
     resolver = RefResolver.from_schema(schema=schema, config=config)
+    if config.validate_schema:
+        from copy import deepcopy
+        data = deepcopy(resolver.schema)
+        resolver.meta_schema.validate(data)
     code_generator = CodeGenerator(resolver=resolver)
     _, name = resolver.get_scope_name()
     return name, code_generator
