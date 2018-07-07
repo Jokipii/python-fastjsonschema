@@ -105,22 +105,6 @@ class CodeGenerator(object):
         self.generate_func_code()
 
     @property
-    def func_code(self):
-        """Return generated code of whole validation function as string."""
-        return '\n'.join(self._code)
-
-    @property
-    def global_state(self):
-        """
-        Return global variables for generating function from ``func_code``.
-
-        Includes compiled regular expressions and imports, so it does not have
-        to do it every time when validation function is called.
-        """
-        state = dict()
-        return state
-
-    @property
     def code(self):
         """
         Return schema definition as code.

@@ -73,6 +73,9 @@ from .formats import FormatResolver
 from .version import __version__
 
 
+compile_state = {}
+
+
 # pylint: disable=too-few-public-methods
 class Config(object):
     """
@@ -147,10 +150,9 @@ def compile(definition, config=None):
 
     """
     name, code_generator = _factory(definition, config)
-    global_state = code_generator.global_state
-    # Do not pass local state so it can recursively call itself.
-    exec(code_generator.code, global_state)
-    return global_state[name]
+    compile_state.clear()
+    exec(code_generator.code, compile_state)
+    return compile_state[name]
 
 
 def compile_to_code(definition, config=None):
