@@ -149,7 +149,7 @@ def compile(definition, config=None):
     name, code_generator = _factory(definition, config)
     global_state = code_generator.global_state
     # Do not pass local state so it can recursively call itself.
-    exec(code_generator.func_code, global_state)
+    exec(code_generator.code, global_state)
     return global_state[name]
 
 

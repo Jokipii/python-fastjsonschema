@@ -118,13 +118,7 @@ class CodeGenerator(object):
         Includes compiled regular expressions and imports, so it does not have
         to do it every time when validation function is called.
         """
-        state = dict(
-            REGEX_PATTERNS=self._compile_regexps,
-            re=re,
-            JsonSchemaException=JsonSchemaException,
-        )
-        for format_ in self._import_formats:
-            state[format_] = getattr(importlib.import_module('fastjsonschema.formats'), format_)
+        state = dict()
         return state
 
     @property

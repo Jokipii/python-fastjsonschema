@@ -78,5 +78,5 @@ def test_bench_code_gen(benchmark):
         },
         config=Config()
     )
-
+    format_resorver = FormatResolver()
     benchmark(CodeGenerator, resolver=current_resolver, formats=FormatResolver)
