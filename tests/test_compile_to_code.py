@@ -38,7 +38,6 @@ def test_compile_to_code_with_regex(asserter_cc, value, expected, filename):
     )
 
 
-@pytest.mark.skip
 @pytest.mark.benchmark(
     min_time=0.01,
     max_time=2,
@@ -61,7 +60,6 @@ def test_bench_ref_resolver(benchmark):
     benchmark(get_resolver)
 
 
-@pytest.mark.skip
 @pytest.mark.benchmark(
     min_time=0.01,
     max_time=2,

@@ -13,16 +13,11 @@ from .version import __version__
 from .exceptions import JsonSchemaException
 from .indent import indent
 from .ref_resolver import RefResolver
-
-def enforce_list(variable):
-    """Change anything to list."""
-    if isinstance(variable, list):
-        return variable
-    return [variable]
+from .types import TypeResolver
 
 
 # pylint: disable=too-many-instance-attributes,too-many-public-methods
-class CodeGenerator:
+class CodeGenerator(object):
     """
     This class is not supposed to be used directly.
 
@@ -38,16 +33,6 @@ class CodeGenerator:
     """
 
     INDENT = 4  # spaces
-
-    JSON_TYPE_TO_PYTHON_TYPE = {
-        'null': 'NoneType',
-        'boolean': 'bool',
-        'number': 'int, float',
-        'integer': 'int',
-        'string': 'str',
-        'array': 'list',
-        'object': 'dict',
-    }
 
     def __init__(self, resolver: RefResolver):
         """Init."""
@@ -68,6 +53,7 @@ class CodeGenerator:
         self._validation_functions_done = set()
 
         self._resolver = resolver
+        self._type_resolver = TypeResolver(resolver.meta_schema.uri)
         # add main function to `self._needed_validation_functions`
         self._generate_function_from_scope()
 
@@ -320,23 +306,9 @@ class CodeGenerator:
             {'type': 'string'}
             {'type': ['string', 'number']}
         """
-        types = enforce_list(self._definition['type'])
-        python_types = ', '.join(self.JSON_TYPE_TO_PYTHON_TYPE.get(t) for t in types)
-
-        extra = ''
-        if 'integer' in types and self._resolver.meta_schema.uri != "http://json-schema.org/draft-04/schema#":
-            # for zeroTerminatedFloats.json in draft-06 and in draft-07
-            # some languages do not distinguish between different types of numeric value
-            # a float without fractional part is an integer
-            extra += ' and not (isinstance({variable}, float) and {variable}.is_integer())'.format(
-                variable=self._variable
-            )
-        if ('number' in types or 'integer' in types) and 'boolean' not in types:
-            extra += ' or isinstance({variable}, bool)'.format(variable=self._variable)
-
-        with self.l('if not isinstance({variable}, ({})){}:', python_types, extra):
-            self.l('raise JsonSchemaException("{name} must be {}")', ' or '.join(types))
-
+        if_statement, raise_statement = self._type_resolver.type_definition_list(self._definition['type'])
+        with self.l(if_statement):
+            self.l(raise_statement)
 
     def generate_enum(self):
         """

@@ -76,7 +76,7 @@ from .version import __version__
 class Config(object):
     """
     Configuration options.
-    
+
     :argument str schema_version: Meta schema version where definition
         is created. This is used if schema itsef doesn't have
         valid refeerence ``$scheme``. Default is ```draft7``.
@@ -91,7 +91,7 @@ class Config(object):
     :argument bool include_version: whether library version is included
         in generated code. Default False.
     :returns: the Configuration.
-"""
+    """
 
     # pylint: disable=too-many-arguments
     def __init__(
