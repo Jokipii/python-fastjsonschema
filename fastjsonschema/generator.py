@@ -6,7 +6,6 @@
 #
 
 import re
-import importlib
 from collections import OrderedDict
 
 from .version import __version__

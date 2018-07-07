@@ -5,6 +5,8 @@ from collections import namedtuple
 
 from expynent import patterns
 
+from fastjsonschema.exceptions import JsonSchemaException
+
 
 RegExConfig = namedtuple('RegExConfig', ['pattern', 'flags'])
 
@@ -200,9 +202,10 @@ class FormatResolver(object):
 
     def get_function_name(self, name):
         """Resturns name of function"""
-        if name in self._functions:
-            func = self._functions[name]
-            return func.__name__
+        if not name in self._functions:
+            raise JsonSchemaException('Format function not found: ' + name)
+        func = self._functions[name]
+        return func.__name__
 
     def _compile_regex(self, name):
         value = re.compile(*self._regexs[name])
