@@ -20,8 +20,7 @@ def asserter():
         config = Config(schema_version='draft4', validate_schema=False)
         # When test fails, it will show up code.
         resolver, code_generator = _factory(definition, config=config)
-        print(code_generator.func_code)
-        pprint(code_generator.global_state)
+        print(code_generator.code)
 
         validator = compile(definition, config=config)
         if isinstance(expected, JsonSchemaException):

@@ -14,6 +14,7 @@ from .exceptions import JsonSchemaException
 from .indent import indent
 from .ref_resolver import RefResolver
 from .types import TypeResolver
+from .formats import FormatResolver
 
 
 # pylint: disable=too-many-instance-attributes,too-many-public-methods
@@ -34,7 +35,7 @@ class CodeGenerator(object):
 
     INDENT = 4  # spaces
 
-    def __init__(self, resolver: RefResolver):
+    def __init__(self, resolver: RefResolver, formats: FormatResolver):
         """Init."""
         self._code = []
         self._compile_regexps = {}
@@ -53,6 +54,7 @@ class CodeGenerator(object):
         self._validation_functions_done = set()
 
         self._resolver = resolver
+        self._formats = formats
         self._type_resolver = TypeResolver(resolver.meta_schema.uri)
         # add main function to `self._needed_validation_functions`
         self._generate_function_from_scope()
@@ -126,21 +128,18 @@ class CodeGenerator(object):
         return state
 
     @property
-    def global_state_code(self):
+    def code(self):
         """
-        Return definirion as code.
+        Return schema definition as code.
 
         Includes compiled regular expressions and imports.
+        Code can be executed directly or write on disk and use as python
+        module.
         """
         result = ['# pylint: skip-file']
         if self._compile_regexps:
             result.append('import re')
-        result.extend(
-            [
-                'from fastjsonschema.formats import {}'.format(value)
-                for value in self._import_formats
-            ]
-        )
+        result.append('from fastjsonschema.formats import FormatResolver')
         result.append('from fastjsonschema.exceptions import JsonSchemaException')
         result.append('')
         if self._compile_regexps:
@@ -155,6 +154,8 @@ class CodeGenerator(object):
             ])
         if self._resolver.config.include_version:
             result.append('__version__ = "' + __version__ + '"')
+        result.append('')
+        result.append('format_resolver = FormatResolver()')
         result.append('')
         result.extend(self._code)
         return '\n'.join(result)
@@ -468,19 +469,17 @@ class CodeGenerator(object):
             format_ = self._definition['format']
             format_regexs = self._resolver.meta_schema.format_regexs
             if format_ in format_regexs:
-                format_regex = format_regexs[format_]
-                self._generate_format(format_, format_ + '_re_pattern', format_regex)
+                self._generate_format(format_)
             format_functions = self._resolver.meta_schema.format_functions
             if format_ in format_functions:
-                self._import_formats.add(format_functions[format_])
-                with self.l('if not {}({variable}):', format_functions[format_]):
+                self.l('is_format = format_resolver.get_function("{}")', format_)
+                with self.l('if not is_format({variable}):'):
                     self.l('raise JsonSchemaException("{name} must be a valid {}")', format_)
 
-    def _generate_format(self, format_name, regexp_name, regexp):
+    def _generate_format(self, format_name):
         if self._definition['format'] == format_name:
-            if not regexp_name in self._compile_regexps:
-                self._compile_regexps[regexp_name] = re.compile(regexp)
-            with self.l('if not REGEX_PATTERNS["{}"].match({variable}):', regexp_name):
+            self.l('regex = format_resolver.get_function("{}")', format_name)
+            with self.l('if not regex.match({variable}):'):
                 self.l('raise JsonSchemaException("{name} must be {}")', format_name)
 
     def generate_minimum(self):

@@ -57,7 +57,7 @@ __all__ = (
     'Config',
     'JsonSchemaException',
     'compile',
-    'compile_to_code'
+    'compile_to_code',
 )
 
 from os.path import exists
@@ -69,6 +69,7 @@ import click
 from .exceptions import JsonSchemaException
 from .generator import CodeGenerator
 from .ref_resolver import RefResolver
+from .formats import FormatResolver
 from .version import __version__
 
 
@@ -181,7 +182,7 @@ def compile_to_code(definition, config=None):
 
     """
     name, code_generator = _factory(definition, config)
-    return name, code_generator.global_state_code
+    return name, code_generator.code
 
 
 def _factory(schema, config=None):
@@ -191,7 +192,8 @@ def _factory(schema, config=None):
         from copy import deepcopy
         data = deepcopy(resolver.schema)
         resolver.meta_schema.validate(data)
-    code_generator = CodeGenerator(resolver=resolver)
+    format_resolver = FormatResolver()
+    code_generator = CodeGenerator(resolver=resolver, formats=format_resolver)
     _, name = resolver.get_scope_name()
     return name, code_generator
 

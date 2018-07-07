@@ -3,6 +3,7 @@ import pytest
 from fastjsonschema import JsonSchemaException, compile_to_code, Config
 from fastjsonschema.generator import CodeGenerator
 from fastjsonschema.ref_resolver import RefResolver
+from fastjsonschema.formats import FormatResolver
 
 
 exc = JsonSchemaException('data.a must be string')
@@ -78,4 +79,4 @@ def test_bench_code_gen(benchmark):
         config=Config()
     )
 
-    benchmark(CodeGenerator, resolver=current_resolver)
+    benchmark(CodeGenerator, resolver=current_resolver, formats=FormatResolver)

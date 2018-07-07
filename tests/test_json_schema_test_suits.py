@@ -5,6 +5,7 @@ import requests
 from fastjsonschema import Config, JsonSchemaException, compile
 from fastjsonschema.generator import CodeGenerator
 from fastjsonschema.ref_resolver import RefResolver
+from fastjsonschema.formats import FormatResolver
 
 REMOTES = {
     'http://localhost:1234/integer.json': {'type': 'integer'},
@@ -62,7 +63,8 @@ def template_test(schema, schema_version, data, is_valid):
     config = Config(schema_version=schema_version, uri_handlers={'http': remotes_handler})
     # For debug purposes. When test fails, it will print stdout.
     resolver = RefResolver.from_schema(schema, config=config)
-    print(CodeGenerator(resolver=resolver).func_code)
+    code_generator = CodeGenerator(resolver=resolver, formats=FormatResolver)
+    print(code_generator.code)
 
     validate = compile(schema, config)
     try:
