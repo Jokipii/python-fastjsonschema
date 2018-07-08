@@ -1,16 +1,20 @@
 """
-This project was made to come up with fast JSON validations. Just let's see some numbers first:
+This project was made to come up with fast JSON validations.
 
- * Probalby most popular ``jsonschema`` can take in tests up to 5 seconds for valid inputs
-   and 1.2 seconds for invalid inputs.
- * Secondly most popular ``json-spec`` is even worse with up to 7.2 and 1.7 seconds.
- * Lastly ``validictory`` is much better with 370 or 23 miliseconds, but it does not
-   follow all standards and it can be still slow for some purposes.
+Just let's see some numbers first:
 
-That's why this project exists. It compiles definition into Python most stupid code
-which people would had hard time to write by themselfs because of not-written-rule DRY
-(don't repeat yourself). When you compile definition, then times are 25 miliseconds for
-valid inputs and less than 2 miliseconds for invalid inputs. Pretty amazing, right? :-)
+ * Probalby most popular ``jsonschema`` can take in tests up to 5 seconds
+   for valid inputs and 1.2 seconds for invalid inputs.
+ * Secondly most popular ``json-spec`` is even worse with up to 7.2 and
+   1.7 seconds.
+ * Lastly ``validictory`` is much better with 370 or 23 miliseconds, but it
+   does not follow all standards and it can be still slow for some purposes.
+
+That's why this project exists. It compiles definition into Python most
+stupid code which people would had hard time to write by themselfs because
+of not-written-rule DRY (don't repeat yourself). When you compile definition,
+then times are 25 miliseconds for valid inputs and less than 2 miliseconds
+for invalid inputs. Pretty amazing, right? :-)
 
 You can try it for yourself with included script:
 
@@ -30,35 +34,60 @@ You can try it for yourself with included script:
     validictory          valid      ==> 0.36818933801259845
     validictory          invalid    ==> 0.022672351042274386
 
-This library follows and implements `JSON schema v4 <http://json-schema.org>`_. Sometimes
-it's not perfectly clear so I recommend also check out this `understaning json schema
+This library follows and implements `JSON schema draft-04, draft-06,
+amd draft-07 <http://json-schema.org>`_. Sometimes it's not perfectly clear
+so I recommend also check out this `understaning json schema
 <https://spacetelescope.github.io/understanding-json-schema>`_.
 
 Note that there are some differences compared to JSON schema standard:
 
- * Regular expressions are full Python ones, not only what JSON schema allows. It's easier
-   to allow everything and also it's faster to compile without limits. So keep in mind that when
-   you will use more advanced regular expression, it may not work with other library.
- * JSON schema says you can use keyword ``default`` for providing default values. This implementation
-   uses that and always returns transformed input data.
+ * Regular expressions are full Python ones, not only what JSON schema allows.
+   It's easier to allow everything and also it's faster to compile without
+   limits. So keep in mind that when you will use more advanced regular
+   expression, it may not work with other library.
+ * JSON schema says you can use keyword ``default`` for providing default
+   values. This implementation uses that and always returns transformed
+   input data.
 
-Support only for Python 3.3 and higher.
+Support only for Python 3.4 and higher.
 """
 
-from os.path import exists
+__all__ = (
+    '__version__',
+    'Config',
+    'FormatManager',
+    'JsonSchemaException',
+    'compile',
+    'compile_to_code',
+)
 
+from os.path import exists
+import json
+import importlib
+
+import click
+
+from .config import Config
+from .formats import FormatManager
 from .exceptions import JsonSchemaException
 from .generator import CodeGenerator
 from .ref_resolver import RefResolver
-from .version import VERSION
-
-__all__ = ('VERSION', 'JsonSchemaException', 'compile', 'compile_to_code')
+from .version import __version__
 
 
-# pylint: disable=redefined-builtin,dangerous-default-value,exec-used
-def compile(definition, handlers={}):
+
+# pylint: disable=redefined-builtin,exec-used
+def compile(definition, config=None):
     """
-    Generates validation function for validating JSON schema by ``definition``. Example:
+    Generate validation function for validating JSON schema by ``definition``.
+
+    :argument dict definition: Json schema definition
+    :argument Config config: Config object
+    :returns: the validator instance specified by schema definition
+
+    Exception :any:`JsonSchemaException` is thrown when validation fails.
+
+    Example:
 
     .. code-block:: python
 
@@ -81,20 +110,25 @@ def compile(definition, handlers={}):
         data = validate({})
         assert data == {'a': 42}
 
+    """
+    compile_state = {}
+    name, code_generator = _factory(definition, config)
+    compile_state.clear()
+    exec(code_generator.code, compile_state)
+    return compile_state[name]
+
+
+def compile_to_code(definition, config=None):
+    """
+    Generate validation function as plain Python code.
+
+    :argument dict definition: Json schema definition
+    :argument Config config: Config object
+    :returns: tuple(str, str): main validation function name, actual code
+
     Exception :any:`JsonSchemaException` is thrown when validation fails.
-    """
-    resolver, code_generator = _factory(definition, handlers)
-    global_state = code_generator.global_state
-    # Do not pass local state so it can recursively call itself.
-    exec(code_generator.func_code, global_state)
-    return global_state[resolver.get_scope_name()]
 
-
-# pylint: disable=dangerous-default-value
-def compile_to_code(definition, handlers={}):
-    """
-    Generates validation function for validating JSON schema by ``definition``
-    and returns compiled code. Example:
+    Example:
 
     .. code-block:: python
 
@@ -108,20 +142,155 @@ def compile_to_code(definition, handlers={}):
 
     .. code-block:: bash
 
-        echo "{'type': 'string'}" | pytohn3 -m fastjsonschema > your_file.py
-        pytohn3 -m fastjsonschema "{'type': 'string'}" > your_file.py
+        echo '{"type": "string"}' | fastjsonschema > your_file.py
+        fastjsonschema '{"type": "string"}' > your_file.py
 
-    Exception :any:`JsonSchemaException` is thrown when validation fails.
     """
-    _, code_generator = _factory(definition, handlers)
-    return (
-        'VERSION = "' + VERSION + '"\n' +
-        code_generator.global_state_code + '\n' +
-        code_generator.func_code
+    name, code_generator = _factory(definition, config)
+    return name, code_generator.code
+
+
+def _factory(schema, config=None):
+    config = config if config else Config()
+    resolver = RefResolver.from_schema(schema=schema, config=config)
+    if config.validate_schema:
+        from copy import deepcopy
+        data = deepcopy(resolver.schema)
+        resolver.meta_schema.validate(data)
+    format_maneger = FormatManager()
+    code_generator = CodeGenerator(
+        resolver=resolver,
+        formats=format_maneger,
+        config=config,
     )
+    _, name = resolver.get_scope_name()
+    return name, code_generator
 
 
-def _factory(definition, handlers):
-    resolver = RefResolver.from_schema(definition, handlers=handlers)
-    code_generator = CodeGenerator(definition, resolver=resolver)
-    return resolver, code_generator
+@click.command()
+@click.option(
+    '-s',
+    '--schema-file',
+    type=click.STRING,
+    help="Schema file name",
+    default=None,
+)
+@click.option(
+    '-o',
+    '--output-file',
+    type=click.STRING,
+    help="Output file name",
+    default=None,
+)
+@click.option(
+    '-p',
+    '--python-schema',
+    type=click.STRING,
+    help="Python module and function name",
+    default=None,
+)
+@click.option(
+    '-v',
+    '--validate-file',
+    type=click.STRING,
+    help="Validate file name",
+    default=None,
+)
+@click.argument(
+    'schema',
+    type=click.STRING,
+    default='-'
+)
+@click.argument(
+    'output',
+    type=click.STRING,
+    default='-',
+)
+# pylint: disable=too-many-arguments
+def main(
+        schema='-',
+        output='-',
+        output_file=None,
+        schema_file=None,
+        validate_file=None,
+        python_schema=None,
+):
+    """
+    Ccommand line usage examples
+
+
+    Create validation function and store it as python file:
+
+    echo '{"type": "string"}' | fastjsonschema > your_file.py
+
+    fastjsonschema '{"type": "string"}' > your_file.py
+
+
+    Validate document:
+
+    fastjsonschema -s openapi-3.0.json -v api-example.json
+
+    fastjsonschema -p "exampke schema" -v example.json
+
+    """
+    validator = None
+
+    if output != '-' or validate_file:
+        click.secho(
+            'Fast JSON schema validator - version {}'.format(__version__),
+            fg='green'
+        )
+
+    if schema_file:
+        with click.open_file(
+            schema_file, mode='r', encoding='utf-8'
+        ) as file_handle:
+            definition = file_handle.read()
+    elif schema == '-':
+        with click.open_file(
+            schema, mode='r', encoding='utf-8'
+        ) as file_handle:
+            definition = file_handle.read()
+    elif python_schema:
+        click.echo('here')
+        module, validator = python_schema.split(' ')
+        validator = importlib.import_module(module, validator)
+    else:
+        definition = schema
+
+    definition = json.loads(definition)
+    if not validate_file:
+        name, code = compile_to_code(definition)
+    else:
+        if not validator:
+            validator = compile(definition)
+        with open(validate_file, encoding='utf-8') as file_handle:
+            data = file_handle.read()
+        try:
+            validator(json.loads(data))
+            click.secho('Document is valid', fg='green')
+            return True
+        except JsonSchemaException as exception:
+            click.echo(exception.message)
+            click.secho('Document is invalid', fg='red')
+            return False
+
+    if output_file:
+        with click.open_file(
+            output_file, mode='w', encoding='utf-8'
+        ) as file_handle:
+            click.echo(code, file=file_handle)
+        if output != '-':
+            click.echo(''.join([
+                'Schema written in: ',
+                click.style('{}'.format(output), fg='green'),
+                ', main function is: ',
+                click.style('{}'.format(name), fg='blue'),
+            ]))
+    else:
+        click.echo(code)
+    return True
+
+
+if __name__ == '__main__':
+    main()

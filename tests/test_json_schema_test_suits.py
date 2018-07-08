@@ -4,71 +4,59 @@ from pathlib import Path
 import pytest
 import requests
 
-from fastjsonschema import CodeGenerator, RefResolver, JsonSchemaException, compile
+from fastjsonschema import JsonSchemaException, compile
+from fastjsonschema.generator import CodeGenerator
+from fastjsonschema.ref_resolver import RefResolver
+from fastjsonschema.formats import FormatManager
+from fastjsonschema.config import Config
 
-remotes = {
-    'http://localhost:1234/integer.json': {'type': 'integer'},
-    'http://localhost:1234/name.json': {
-        'type': 'string',
-        'definitions': {
-            'orNull': {'anyOf': [{'type': 'null'}, {'$ref': '#'}]},
-        },
-    },
-    'http://localhost:1234/subSchemas.json': {
-        'integer': {'type': 'integer'},
-        'refToInteger': {'$ref': '#/integer'},
-    },
-    'http://localhost:1234/folder/folderInteger.json': {'type': 'integer'}
-}
-def remotes_handler(uri):
-    print(uri)
-    if uri in remotes:
-        return remotes[uri]
-    return requests.get(uri).json()
 
-def pytest_generate_tests(metafunc):
-    suite_dir = 'JSON-Schema-Test-Suite/tests/draft4'
-    ignored_suite_files = [
-        'ecmascript-regex.json',
-    ]
-    ignore_tests = [
-    ]
+from .conftest import remotes_handler
+
+
+def resolve_param_values_and_ids(suite_dir, schema_version, ignored_suite_files, ignore_tests):
 
     suite_dir_path = Path(suite_dir).resolve()
     test_file_paths = sorted(set(suite_dir_path.glob("**/*.json")))
 
     param_values = []
     param_ids = []
-
     for test_file_path in test_file_paths:
-        with test_file_path.open() as test_file:
+        with test_file_path.open(encoding='UTF-8') as test_file:
             test_cases = json.load(test_file)
             for test_case in test_cases:
                 for test_data in test_case['tests']:
                     param_values.append(pytest.param(
                         test_case['schema'],
+                        schema_version,
                         test_data['data'],
                         test_data['valid'],
                         marks=pytest.mark.xfail
-                            if test_file_path.name in ignored_suite_files
-                                or test_case['description'] in ignore_tests
-                            else pytest.mark.none,
+                        if test_file_path.name in ignored_suite_files
+                        or test_case['description'] in ignore_tests
+                        else pytest.mark.none,
                     ))
                     param_ids.append('{} / {} / {}'.format(
                         test_file_path.name,
                         test_case['description'],
                         test_data['description'],
                     ))
+    return param_values, param_ids
 
-    metafunc.parametrize(['schema', 'data', 'is_valid'], param_values, ids=param_ids)
 
-
-def test(schema, data, is_valid):
+def template_test(schema, schema_version, data, is_valid):
+    config =Config(
+        schema_version=schema_version,
+        uri_handlers={'http': remotes_handler},
+        validate_schema=False,
+    )
     # For debug purposes. When test fails, it will print stdout.
-    resolver = RefResolver.from_schema(schema, handlers={'http': remotes_handler})
-    print(CodeGenerator(schema, resolver=resolver).func_code)
+    resolver = RefResolver.from_schema(schema, config=config)
+    format_manager = FormatManager()
+    code_generator = CodeGenerator(resolver=resolver, formats=format_manager, config=config)
+    print(code_generator.code)
 
-    validate = compile(schema, handlers={'http': remotes_handler})
+    validate = compile(schema, config)
     try:
         result = validate(data)
         print('Validate result:', result)

@@ -69,14 +69,22 @@ VALUES_BAD = (
     [9, 'hello', [1, 'a', True], {'a': 'a', 'b': 'b', 'x': 'x'}, 42, 15],
 )
 
+def fast_file_not_comp(value, json_schema):
+    with open('temp/speed.py', 'w') as fp:
+        name, schema = fastjsonschema.compile_to_code(json_schema, config=config)
+        fp.write(schema)
+    from temp.speed import validate
+    validate(value)
 
-fastjsonschema_validate = fastjsonschema.compile(JSON_SCHEMA)
+config = fastjsonschema.Config(schema_version='draft4')
+fastjsonschema_validate = fastjsonschema.compile(JSON_SCHEMA, config=config)
 fast_compiled = lambda value, _: fastjsonschema_validate(value)
 
-fast_not_compiled = lambda value, json_schema: fastjsonschema.compile(json_schema)(value)
+fast_not_compiled = lambda value, json_schema: fastjsonschema.compile(json_schema, config=config)(value)
 
+name, code = fastjsonschema.compile_to_code(JSON_SCHEMA, config=config)
 with open('temp/performance.py', 'w') as f:
-    f.write(fastjsonschema.compile_to_code(JSON_SCHEMA))
+    f.write(code)
 from temp.performance import validate
 fast_file = lambda value, _: validate(value)
 
@@ -96,6 +104,7 @@ def t(func, valid_values=True):
         fast_compiled,
         fast_file,
         fast_not_compiled,
+        fast_file_not_comp,
     )
     """
 
@@ -127,6 +136,9 @@ t('fast_file', valid_values=False)
 
 t('fast_not_compiled')
 t('fast_not_compiled', valid_values=False)
+
+t('fast_file_not_comp')
+t('fast_file_not_comp', valid_values=False)
 
 t('jsonschema.validate')
 t('jsonschema.validate', valid_values=False)

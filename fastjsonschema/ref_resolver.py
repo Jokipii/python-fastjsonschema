@@ -1,6 +1,7 @@
 """
-JSON Schema URI resolution scopes and dereferencing
+Module for JSON reference resolving.
 
+Specification: JSON Schema URI resolution scopes and dereferencing.
 https://tools.ietf.org/id/draft-zyp-json-schema-04.html#rfc.section.7
 
 Code adapted from https://github.com/Julian/jsonschema
@@ -14,10 +15,11 @@ import json
 
 import requests
 
-from .exceptions import JsonSchemaException
+from fastjsonschema.meta_schema import MetaSchema
+from fastjsonschema.exceptions import JsonSchemaException
 
 
-def resolve_path(schema, fragment):
+def resolve_path(schema: dict, fragment: str):
     """
     Return definition from path.
 
@@ -41,11 +43,17 @@ def resolve_path(schema, fragment):
     return schema
 
 
-def normalize(uri):
+def normalize(uri: str):
+    """
+    Normalize URI's.
+
+    :argument str uri: the URI to be normalized
+    :returns: normalized version of URI
+    """
     return urlparse.urlsplit(uri).geturl()
 
 
-def resolve_remote(uri, handlers):
+def resolve_remote(uri: str, handlers: dict):
     """
     Resolve a remote ``uri``.
 
@@ -75,42 +83,66 @@ def resolve_remote(uri, handlers):
 
 
 class RefResolver(object):
-    """
-    Resolve JSON References.
+    """Class to resolve JSON References."""
 
-    :argument str base_uri: URI of the referring document
-    :argument schema: the actual referring schema document
-    :argument dict store: a mapping from URIs to documents to cache
-    :argument bool cache: whether remote refs should be cached after
-        first resolution
-    :argument dict handlers: a mapping from URI schemes to functions that
-        should be used to retrieve them
-
-    """
-
-    # pylint: disable=dangerous-default-value,too-many-arguments
-    def __init__(self, base_uri, schema, store={}, cache=True, handlers={}):
-        self.base_uri = base_uri
-        self.resolution_scope = base_uri
-        self.schema = schema
-        self.store = store
-        self.cache = cache
-        self.handlers = handlers
-        self.walk(schema)
-
-    @classmethod
-    def from_schema(cls, schema, handlers={}, **kwargs):
+    # pylint: disable=too-many-arguments
+    def __init__(
+            self,
+            base_uri: str,
+            schema: dict,
+            meta_schema: str,
+            config,
+    ):
         """
         Construct a resolver from a JSON schema object.
 
-        :argument schema schema: the referring schema
+        :argument str base_uri: URI of the referring document
+        :argument dict schema: the referring schema
+        :argument str meta_schema: schema's meta schema
+        :argument Config config: config object
         :rtype: :class:`RefResolver`
 
         """
-        return cls(schema.get('id', ''), schema, handlers=handlers, **kwargs)
+        self.base_uri = base_uri
+        self.resolution_scope = base_uri
+        self.schema = schema
+        self.meta_schema = meta_schema
+        self.config = config
+        self.uri_cache = {}
+        self.walk(schema)
+
+    @classmethod
+    def from_schema(cls, schema, config):
+        """
+        Static helper to construct a resolver from a JSON schema object.
+
+        :argument dict schema: the referring schema
+        :argument Config config: config object
+        :rtype: :class:`RefResolver`
+
+        If schema_version is defined in actual schema it is used instead of
+        config.meta_schema.
+        """
+        if isinstance(schema, dict) and '$schema' in schema:
+            schema_version = schema['$schema']
+        else:
+            schema_version = config.schema_version
+        meta_schema = MetaSchema(schema_version)
+        id_type = meta_schema.id_type
+        return cls(
+            schema.get(id_type, '') if isinstance(schema, dict) else '',
+            schema,
+            meta_schema=meta_schema,
+            config=config
+        )
 
     @contextlib.contextmanager
-    def in_scope(self, scope):
+    def in_scope(self, scope: str):
+        """
+        Context manager to handle cprrent scope.
+
+        :argument str scope: new scope
+        """
         old_scope = self.resolution_scope
         self.resolution_scope = urlparse.urljoin(old_scope, scope)
         try:
@@ -119,25 +151,23 @@ class RefResolver(object):
             self.resolution_scope = old_scope
 
     @contextlib.contextmanager
-    def resolving(self, ref):
+    def resolving(self, ref: str):
         """
-        Context manager which resolves a JSON ``ref`` and enters the
-        resolution scope of this ref.
+        Context manager which resolves a JSON ``ref``.
 
         :argument str ref: reference to resolve
-
         """
         new_uri = urlparse.urljoin(self.resolution_scope, ref)
         uri, fragment = urlparse.urldefrag(new_uri)
 
-        if normalize(uri) in self.store:
-            schema = self.store[normalize(uri)]
+        if normalize(uri) in self.uri_cache:
+            schema = self.uri_cache[normalize(uri)]
         elif not uri or uri == self.base_uri:
             schema = self.schema
         else:
-            schema = resolve_remote(uri, self.handlers)
-            if self.cache:
-                self.store[normalize(uri)] = schema
+            schema = resolve_remote(uri, self.config.uri_handlers)
+            if self.config.cache_refs:
+                self.uri_cache[normalize(uri)] = schema
 
         old_base_uri, old_schema = self.base_uri, self.schema
         self.base_uri, self.schema = uri, schema
@@ -147,25 +177,34 @@ class RefResolver(object):
         finally:
             self.base_uri, self.schema = old_base_uri, old_schema
 
-    def get_uri(self):
-        return normalize(self.resolution_scope)
+    def get_scope_name(self, postfix: str = ''):
+        """
+        Get current scope and return it as a valid function name.
 
-    def get_scope_name(self):
-        name = 'validate_' + unquote(self.resolution_scope).replace('~1', '_').replace('~0', '_')
-        name = re.sub(r'[:/#\.\-\%]', '_', name)
+        :argument str postfix: Possible postfix for name
+        :rtyper: :(str, str): Uri, Function name based on current scope.
+        """
+        name = 'validate_' + unquote(
+            self.resolution_scope).replace('~1', '_').replace('~0', '_')
+        name = re.sub(r'[:/#\.\-\%]+', '_', name) + postfix
         name = name.lower().rstrip('_')
-        return name
+        return normalize(self.resolution_scope), name
 
     def walk(self, node: dict):
         """
-        Walk thru schema and dereferencing ``id`` and ``$ref`` instances
+        Walk thru schema and dereferencing ``id`` and ``$ref`` instances.
+
+        :argument dict node: Schema node.
         """
-        if '$ref' in node and isinstance(node['$ref'], str):
+        _id = self.meta_schema.id_type
+        if isinstance(node, bool):
+            pass
+        elif '$ref' in node and isinstance(node['$ref'], str):
             ref = node['$ref']
             node['$ref'] = urlparse.urljoin(self.resolution_scope, ref)
-        elif 'id' in node and isinstance(node['id'], str):
-            with self.in_scope(node['id']):
-                self.store[normalize(self.resolution_scope)] = node
+        elif _id in node and isinstance(node[_id], str):
+            with self.in_scope(node[_id]):
+                self.uri_cache[normalize(self.resolution_scope)] = node
                 for _, item in node.items():
                     if isinstance(item, dict):
                         self.walk(item)

@@ -1,15 +1,19 @@
 # Python files
 __pycache__/
+__pycache__
 .cache/
+.cache
 *.pyc
 *.pyo
 
 # Test files
 .pytest_cache/
+.pytest_cache
 temp/
-.benchmarks/
+.tox
+.testmondata
 .coverage
-.tox/
+.benchmarks
 
 # Deb files
 debian/files
@@ -23,7 +27,7 @@ build/
 _build/
 dist/
 venv/
-python-fastjsonschema-doc
+python-fastjsonschema-doc/
 
-# Editor
-.vscode/
+# Editors
+.vscode
