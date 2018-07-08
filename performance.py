@@ -76,7 +76,7 @@ def fast_file_not_comp(value, json_schema):
     from temp.speed import validate
     validate(value)
 
-config = fastjsonschema.Config(schema_version='draft4')
+config = fastjsonschema.Config(meta_schema='draft4')
 fastjsonschema_validate = fastjsonschema.compile(JSON_SCHEMA, config=config)
 fast_compiled = lambda value, _: fastjsonschema_validate(value)
 

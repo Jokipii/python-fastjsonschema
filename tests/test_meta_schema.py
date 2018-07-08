@@ -17,7 +17,7 @@ from fastjsonschema import Config, compile, JsonSchemaException
 
 ])
 def test_meta_schema(value, draft, expected):
-    config = Config(schema_version=draft, validate_schema=True)
+    config = Config(meta_schema=draft, validate_schema=True)
     try:
         func = compile(value, config=config)
     except JsonSchemaException:

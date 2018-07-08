@@ -44,9 +44,9 @@ def resolve_param_values_and_ids(suite_dir, schema_version, ignored_suite_files,
     return param_values, param_ids
 
 
-def template_test(schema, schema_version, data, is_valid):
+def template_test(schema, meta_schema, data, is_valid):
     config =Config(
-        schema_version=schema_version,
+        meta_schema=meta_schema,
         uri_handlers={'http': remotes_handler},
         validate_schema=False,
     )

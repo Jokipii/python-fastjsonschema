@@ -6,7 +6,7 @@ class Config(object):
     """
     Configuration options.
 
-    :argument str schema_version: Meta schema version where definition
+    :argument str meta_schema: Meta schema version where definition
         is created. This is used if schema itsef doesn't have
         valid refeerence ``$scheme``. Default is ```draft7``.
     :argument dict handlers: A mapping from ``URI schemes`` as ``str``
@@ -27,7 +27,7 @@ class Config(object):
     # pylint: disable=too-many-arguments
     def __init__(
             self,
-            schema_version="draft7",
+            meta_schema="draft7",
             uri_handlers: dict = None,
             cache_refs=True,
             validate_schema=False,
@@ -35,7 +35,7 @@ class Config(object):
             ecma262_regex_non_compliance=True,
     ):
         """Init."""
-        self.schema_version = schema_version
+        self.schema_version = meta_schema
         self.uri_handlers = uri_handlers if uri_handlers else {}
         self.cache_refs = cache_refs
         self.validate_schema = validate_schema

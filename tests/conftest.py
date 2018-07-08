@@ -39,7 +39,7 @@ def remotes_handler(uri):
 
 
 CONFIG = Config(
-    schema_version='draft4',
+    meta_schema='draft4',
     uri_handlers={'http': remotes_handler},
     validate_schema=False,
 )
@@ -48,7 +48,7 @@ CONFIG = Config(
 @pytest.fixture
 def asserter():
     def f(definition, value, expected):
-        config = Config(schema_version='draft4')
+        config = Config(meta_schema='draft4')
         # When test fails, it will show up code.
         resolver, code_generator = _factory(definition, config=CONFIG)
         print(code_generator.code)
@@ -66,7 +66,7 @@ def asserter():
 @pytest.fixture
 def asserter_cc():
     def f(definition, value, expected, filename):
-        config = Config(schema_version='draft4', validate_schema=False)
+        config = Config(meta_schema='draft4', validate_schema=False)
         # When test fails, it will show up code.
         name, code = compile_to_code(definition, config=CONFIG)
         print(code)
