@@ -55,6 +55,7 @@ Support only for Python 3.4 and higher.
 __all__ = (
     '__version__',
     'Config',
+    'FormatManager',
     'JsonSchemaException',
     'compile',
     'compile_to_code',
@@ -66,52 +67,13 @@ import importlib
 
 import click
 
+from .config import Config
+from .formats import FormatManager
 from .exceptions import JsonSchemaException
 from .generator import CodeGenerator
 from .ref_resolver import RefResolver
-from .formats import FormatResolver
 from .version import __version__
 
-
-compile_state = {}
-
-
-# pylint: disable=too-few-public-methods
-class Config(object):
-    """
-    Configuration options.
-
-    :argument str schema_version: Meta schema version where definition
-        is created. This is used if schema itsef doesn't have
-        valid refeerence ``$scheme``. Default is ```draft7``.
-    :argument dict handlers: A mapping from ``URI schemes`` as ``str``
-        to functions that should be used to retrieve schema parts.
-        Function must ta ke ``uri`` as argument and return valid schema
-        as ``dict`` or throw ``JsonSchemaException``.
-    :argument bool cache_refs: whether remote refs should be cached after
-        first resolution. Default True.
-    :argument bool validate_schema: whether schema should be validated
-        against it meta schema. Default False.
-    :argument bool include_version: whether library version is included
-        in generated code. Default False.
-    :returns: the Configuration.
-    """
-
-    # pylint: disable=too-many-arguments
-    def __init__(
-            self,
-            schema_version: str = "draft7",
-            uri_handlers: dict = None,
-            cache_refs: bool = True,
-            validate_schema: bool = False,
-            include_version: bool = False,
-    ):
-        """Init."""
-        self.schema_version = schema_version
-        self.uri_handlers = uri_handlers if uri_handlers else {}
-        self.cache_refs = cache_refs
-        self.validate_schema = validate_schema
-        self.include_version = include_version
 
 
 # pylint: disable=redefined-builtin,exec-used
@@ -149,6 +111,7 @@ def compile(definition, config=None):
         assert data == {'a': 42}
 
     """
+    compile_state = {}
     name, code_generator = _factory(definition, config)
     compile_state.clear()
     exec(code_generator.code, compile_state)
@@ -194,8 +157,12 @@ def _factory(schema, config=None):
         from copy import deepcopy
         data = deepcopy(resolver.schema)
         resolver.meta_schema.validate(data)
-    format_resolver = FormatResolver()
-    code_generator = CodeGenerator(resolver=resolver, formats=format_resolver)
+    format_maneger = FormatManager()
+    code_generator = CodeGenerator(
+        resolver=resolver,
+        formats=format_maneger,
+        config=config,
+    )
     _, name = resolver.get_scope_name()
     return name, code_generator
 

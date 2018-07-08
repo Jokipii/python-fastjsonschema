@@ -1,11 +1,10 @@
 import pytest
-from test_json_schema_test_suits import template_test, resolve_param_values_and_ids
+from .test_json_schema_test_suits import template_test, resolve_param_values_and_ids
 
 
 def pytest_generate_tests(metafunc):
     suite_dir = 'JSON-Schema-Test-Suite/tests/draft4'
     ignored_suite_files = [
-        'ecmascript-regex.json',
     ]
     ignore_tests = []
 

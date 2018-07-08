@@ -1,32 +1,17 @@
 import json
-import pytest
 from pathlib import Path
+
+import pytest
 import requests
-from fastjsonschema import Config, JsonSchemaException, compile
+
+from fastjsonschema import JsonSchemaException, compile
 from fastjsonschema.generator import CodeGenerator
 from fastjsonschema.ref_resolver import RefResolver
-from fastjsonschema.formats import FormatResolver
+from fastjsonschema.formats import FormatManager
+from fastjsonschema.config import Config
 
-REMOTES = {
-    'http://localhost:1234/integer.json': {'type': 'integer'},
-    'http://localhost:1234/name.json': {
-        'type': 'string',
-        'definitions': {
-            'orNull': {'anyOf': [{'type': 'null'}, {'$ref': '#'}]},
-        },
-    },
-    'http://localhost:1234/subSchemas.json': {
-        'integer': {'type': 'integer'},
-        'refToInteger': {'$ref': '#/integer'},
-    },
-    'http://localhost:1234/folder/folderInteger.json': {'type': 'integer'}
-}
 
-def remotes_handler(uri):
-    print(uri)
-    if uri in REMOTES:
-        return REMOTES[uri]
-    return requests.get(uri).json()
+from .conftest import remotes_handler
 
 
 def resolve_param_values_and_ids(suite_dir, schema_version, ignored_suite_files, ignore_tests):
@@ -47,9 +32,9 @@ def resolve_param_values_and_ids(suite_dir, schema_version, ignored_suite_files,
                         test_data['data'],
                         test_data['valid'],
                         marks=pytest.mark.xfail
-                            if test_file_path.name in ignored_suite_files
-                                or test_case['description'] in ignore_tests
-                            else pytest.mark.none,
+                        if test_file_path.name in ignored_suite_files
+                        or test_case['description'] in ignore_tests
+                        else pytest.mark.none,
                     ))
                     param_ids.append('{} / {} / {}'.format(
                         test_file_path.name,
@@ -60,11 +45,15 @@ def resolve_param_values_and_ids(suite_dir, schema_version, ignored_suite_files,
 
 
 def template_test(schema, schema_version, data, is_valid):
-    config = Config(schema_version=schema_version, uri_handlers={'http': remotes_handler})
+    config =Config(
+        schema_version=schema_version,
+        uri_handlers={'http': remotes_handler},
+        validate_schema=False,
+    )
     # For debug purposes. When test fails, it will print stdout.
     resolver = RefResolver.from_schema(schema, config=config)
-    format_resorver = FormatResolver()
-    code_generator = CodeGenerator(resolver=resolver, formats=format_resorver)
+    format_manager = FormatManager()
+    code_generator = CodeGenerator(resolver=resolver, formats=format_manager, config=config)
     print(code_generator.code)
 
     validate = compile(schema, config)

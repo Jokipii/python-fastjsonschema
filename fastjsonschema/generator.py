@@ -13,7 +13,8 @@ from .exceptions import JsonSchemaException
 from .indent import indent
 from .ref_resolver import RefResolver
 from .types import TypeResolver
-from .formats import FormatResolver
+from .formats import FormatManager
+from .config import Config
 
 
 # pylint: disable=too-many-instance-attributes,too-many-public-methods
@@ -34,7 +35,12 @@ class CodeGenerator(object):
 
     INDENT = 4  # spaces
 
-    def __init__(self, resolver: RefResolver, formats: FormatResolver):
+    def __init__(
+            self,
+            resolver: RefResolver,
+            formats: FormatManager,
+            config: Config,
+    ):
         """Init."""
         self._code = []
         self._compile_regexps = {}
@@ -54,6 +60,7 @@ class CodeGenerator(object):
 
         self._resolver = resolver
         self._formats = formats
+        self._config = config
         self._type_resolver = TypeResolver(resolver.meta_schema.uri)
         # add main function to `self._needed_validation_functions`
         self._generate_function_from_scope()
@@ -116,7 +123,7 @@ class CodeGenerator(object):
         result = ['# pylint: skip-file']
         if self._compile_regexps:
             result.append('import re')
-        result.append('from fastjsonschema.formats import FormatResolver')
+        result.append('from fastjsonschema.formats import FormatManager')
         result.append('from fastjsonschema.exceptions import JsonSchemaException')
         result.append('')
         if self._compile_regexps:
@@ -132,7 +139,7 @@ class CodeGenerator(object):
         if self._resolver.config.include_version:
             result.append('__version__ = "' + __version__ + '"')
         result.append('')
-        result.append('format_resolver = FormatResolver()')
+        result.append('format_resolver = FormatManager()')
         result.append('')
         result.extend(self._code)
         return '\n'.join(result)

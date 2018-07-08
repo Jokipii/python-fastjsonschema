@@ -1,15 +1,19 @@
 import pytest
 
-from fastjsonschema import JsonSchemaException, compile_to_code, Config
+from fastjsonschema import JsonSchemaException, compile_to_code
 from fastjsonschema.generator import CodeGenerator
 from fastjsonschema.ref_resolver import RefResolver
-from fastjsonschema.formats import FormatResolver
+from fastjsonschema.formats import FormatManager
+from fastjsonschema.config import Config
 
 
-exc = JsonSchemaException('data.a must be string')
+from .conftest import CONFIG
+
+
+EXC = JsonSchemaException('data.a must be string')
 @pytest.mark.parametrize('value, expected, filename', [
     ({'a': 'a', 'b': 1}, {'a': 'a', 'b': 1}, 'cc_test_1'),
-    ({'a': 1, 'b': 1}, exc, 'cc_test_2'),
+    ({'a': 1, 'b': 1}, EXC, 'cc_test_2'),
 ])
 def test_compile_to_code(asserter_cc, value, expected, filename):
     asserter_cc(
@@ -20,10 +24,10 @@ def test_compile_to_code(asserter_cc, value, expected, filename):
     )
 
 
-exc = JsonSchemaException('data.a must match pattern [ab]')
+EXC = JsonSchemaException('data.a must match pattern [ab]')
 @pytest.mark.parametrize('value, expected, filename', [
     ({'a': 'a', 'b': 1}, {'a': 'a', 'b': 1}, 'cc_test_3'),
-    ({'a': 'c', 'b': 1}, exc, 'cc_test_4'),
+    ({'a': 'c', 'b': 1}, EXC, 'cc_test_4'),
 ])
 def test_compile_to_code_with_regex(asserter_cc, value, expected, filename):
     asserter_cc(
@@ -78,5 +82,5 @@ def test_bench_code_gen(benchmark):
         },
         config=Config()
     )
-    format_resorver = FormatResolver()
-    benchmark(CodeGenerator, resolver=current_resolver, formats=FormatResolver)
+    format_manager = FormatManager()
+    benchmark(CodeGenerator, resolver=current_resolver, formats=format_manager, config=CONFIG)

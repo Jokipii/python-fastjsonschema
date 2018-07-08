@@ -136,6 +136,11 @@ def is_valid_regexp(variable):
     :rtype: bool: False if invalid.
     """
     try:
+        if variable.endswith('\\Z'):
+            raise JsonSchemaException(
+                'raise JsonSchemaException("{name} not allowed'
+                +' because ECMA 262 regex non-compliance: {pattern}")'
+            )
         re.compile(pattern=variable)
     except re.error:
         return False
@@ -167,7 +172,7 @@ FORMAT_FUNCTIONS = {
 }
 
 
-class FormatResolver(object):
+class FormatManager(object):
     """
     Class to handle all differet formats
 
