@@ -12,27 +12,22 @@ Fast JSON schema for Python
    :alt: Supported Python versions
    :target: https://pypi.python.org/pypi/fastjsonschema
 
-This project was made to come up with fast JSON validations. It is at
-least an order of magnitude faster than other Python implemantaions.
-See `documentation <https://seznam.github.io/python-fastjsonschema/>`_ for
-performance test details.
+This project was made to come up with fast `JSON Schema <http://json-schema.org/>`_
+validations. See `documentation <https://seznam.github.io/python-fastjsonschema/>`_
+for performance test details.
 
-Current version is implementation of `json-schema <http://json-schema.org/>`_
-draft-04, draft-06, and draft-07.
-Note that there are some differences compared to JSON schema standard:
-
-* Regular expressions are full Python ones, not only what JSON schema
-  allows. It's easier to allow everything and also it's faster to
-  compile without limits. So keep in mind that when you will use more
-  advanced regular expression, it may not work with other library.
-* JSON schema says you can use keyword ``default`` for providing default
-  values. This implementation uses that and always returns transformed
-  input data.
+Current version is complete an implementation of the JSON Schema
+`Draft v4 <https://tools.ietf.org/html/draft-zyp-json-schema-04>`_,
+`Draft v6 <https://tools.ietf.org/html/draft-wright-json-schema-01>`_
+and `Draft v7 <https://tools.ietf.org/html/draft-handrews-json-schema-validation-00>`_,
+specifications.
+It passes 100% of the `official JSON Schema Test Suite
+<https://github.com/json-schema-org/JSON-Schema-Test-Suite>`_
 
 Features
 --------
 
-* Compatible with draft-04, draft-06, and draft-07
+* 100% compatible with draft-04, draft-06, and draft-07
 * Fast validation
 * Commandline usage
 * Validation function as code
