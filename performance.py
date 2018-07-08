@@ -89,7 +89,8 @@ from temp.performance import validate
 fast_file = lambda value, _: validate(value)
 
 jsonspec = load(JSON_SCHEMA)
-
+jsonschema_validator = jsonschema.Draft4Validator(JSON_SCHEMA)
+jsonschema_compiled = lambda value, _: jsonschema_validator.validate(value)
 
 def t(func, valid_values=True):
     module = func.split('.')[0]
@@ -99,6 +100,7 @@ def t(func, valid_values=True):
         VALUES_OK,
         VALUES_BAD,
         validictory,
+        jsonschema_compiled,
         jsonschema,
         jsonspec,
         fast_compiled,
@@ -123,7 +125,7 @@ def t(func, valid_values=True):
         """.format(func))
 
     res = timeit.timeit(code, setup, number=NUMBER)
-    print('{:<20} {:<10} ==> {}'.format(module, 'valid' if valid_values else 'invalid', res))
+    print('{:<25} {:<10} ==> {}'.format(module, 'valid' if valid_values else 'invalid', res))
 
 
 print('Number: {}'.format(NUMBER))
@@ -134,11 +136,14 @@ t('fast_compiled', valid_values=False)
 t('fast_file')
 t('fast_file', valid_values=False)
 
-t('fast_not_compiled')
-t('fast_not_compiled', valid_values=False)
+t('jsonschema_compiled')
+t('jsonschema_compiled', valid_values=False)
 
 t('fast_file_not_comp')
 t('fast_file_not_comp', valid_values=False)
+
+t('fast_not_compiled')
+t('fast_not_compiled', valid_values=False)
 
 t('jsonschema.validate')
 t('jsonschema.validate', valid_values=False)
